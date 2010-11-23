@@ -1,5 +1,5 @@
 package com.badlogic.gdx.map;
 
-public class App {
+public class Map {
 
 }
