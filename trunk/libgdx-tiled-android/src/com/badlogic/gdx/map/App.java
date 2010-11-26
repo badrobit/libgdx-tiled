@@ -1,9 +1,8 @@
 package com.badlogic.gdx.map;
 
-import com.badlogic.gdx.backends.android.AndroidApplication;
-
-import android.app.Activity;
 import android.os.Bundle;
+
+import com.badlogic.gdx.backends.android.AndroidApplication;
 
 public class App extends AndroidApplication {
 	@Override
