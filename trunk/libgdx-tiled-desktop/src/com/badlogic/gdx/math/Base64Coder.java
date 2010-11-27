@@ -1,5 +1,3 @@
-//See http://www.source-code.biz/base64coder/java/
-
 //Copyright 2003-2010 Christian d'Heureuse, Inventec Informatik AG, Zurich, Switzerland
 // www.source-code.biz, www.inventec.ch/chdh
 //
@@ -14,6 +12,7 @@
 //
 // Please contact the author if you need another license.
 // This module is provided "as is", without warranties of any kind.
+
 
 /**
 * A Base64 encoder/decoder.
