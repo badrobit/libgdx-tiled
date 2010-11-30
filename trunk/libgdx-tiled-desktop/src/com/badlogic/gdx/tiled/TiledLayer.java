@@ -15,8 +15,9 @@ package com.badlogic.gdx.tiled;
 
 //holds map layer information
 public class TiledLayer {
-	String name;
-	int width, height;
+	private String name;
+
+	private int width, height;
 	int[][] map;
 
 	TiledLayer(String name, int width, int height){
@@ -24,6 +25,27 @@ public class TiledLayer {
 		this.width = width;
 		this.height = height;
 		map = new int[height][width];
+	}
+	
+	/**
+     * @return Layer name
+     */
+	public String getName() {
+		return name;
+	}
+	
+	/**
+     * @return Layer width in number of tiles
+     */
+	public int getWidth() {
+		return width;
+	}
+	
+	/**
+     * @return Layer height in number of tiles
+     */
+	public int getHeight() {
+		return height;
 	}
 	
 	@Override

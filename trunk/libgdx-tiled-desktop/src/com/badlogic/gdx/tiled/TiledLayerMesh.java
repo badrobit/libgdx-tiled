@@ -42,10 +42,10 @@ public class TiledLayerMesh {
 		this.layer = layer;
 		this.tileSet = tileSet;
 		
-		layerHeightPixels = layer.height * tileSet.tileHeight;
-		layerWidthPixels = layer.width * tileSet.tileWidth;
+		layerHeightPixels = layer.getHeight() * tileSet.getTileHeight();
+		layerWidthPixels = layer.getWidth() * tileSet.getTileWidth();
 		
-		maxVertices = 4 * layer.width;
+		maxVertices = 4 * layer.getWidth();
 		
 		VertexAttribute position = new VertexAttribute(
 				VertexAttributes.Usage.Position, 2, null);
@@ -53,10 +53,10 @@ public class TiledLayerMesh {
 		VertexAttribute textureCoordinate = new VertexAttribute(
 				VertexAttributes.Usage.TextureCoordinates, 2, null);
 		
-		vertices = new float[layer.height][maxVertices * NUMCOMPONENTS];
-		mesh = new Mesh[layer.height];
+		vertices = new float[layer.getHeight()][maxVertices * NUMCOMPONENTS];
+		mesh = new Mesh[layer.getHeight()];
 		
-		for(int row=0; row < layer.height; row++){
+		for(int row=0; row < layer.getHeight(); row++){
 			currentVertexIndex = 0;
 			mesh[row] = new Mesh(true, maxVertices, 0, position, textureCoordinate);
 			fill(row);
@@ -68,9 +68,9 @@ public class TiledLayerMesh {
 		int col;
 		int tile;
 		
-		for (col = 0; col < layer.width; col++) {
+		for (col = 0; col < layer.getWidth(); col++) {
 			//load tiles "upside down" since origin is in bottom left for gdx, but in upper left in Tiled
-			tile = layer.map[layer.height - row - 1][col];
+			tile = layer.map[layer.getHeight() - row - 1][col];
 			if(tile == 0)
 				addEmptyTile(row, col);
 			else
@@ -81,102 +81,102 @@ public class TiledLayerMesh {
 	//adds a couple of degenerate triangles to fill the gap for empty tiles
 	private void addEmptyTile(int row, int col) {
 		if (col % 2 == 0) {
-			vertices[row][currentVertexIndex++] = (float)col * tileSet.tileWidth;// position X
-			vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.tileHeight;// position Y
+			vertices[row][currentVertexIndex++] = (float)col * tileSet.getTileWidth();// position X
+			vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.getTileHeight();// position Y
 			vertices[row][currentVertexIndex++] = 0; // texture U
 			vertices[row][currentVertexIndex++] = 0; // texture V
 			
-			vertices[row][currentVertexIndex++] = (float)col * tileSet.tileWidth;// position X
-			vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.tileHeight;// position Y
+			vertices[row][currentVertexIndex++] = (float)col * tileSet.getTileWidth();// position X
+			vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.getTileHeight();// position Y
 			vertices[row][currentVertexIndex++] = 0; // texture U
 			vertices[row][currentVertexIndex++] = 0; // texture V
 			
-			vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.tileWidth;// position X
-			vertices[row][currentVertexIndex++] = (float)row * tileSet.tileHeight;// position Y
+			vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.getTileWidth();// position X
+			vertices[row][currentVertexIndex++] = (float)row * tileSet.getTileHeight();// position Y
 			vertices[row][currentVertexIndex++] = 0; // texture X
 			vertices[row][currentVertexIndex++] = 0; // texture Y
 			
-			vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.tileWidth;// position X
-			vertices[row][currentVertexIndex++] = (float)row * tileSet.tileHeight;// position Y
+			vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.getTileWidth();// position X
+			vertices[row][currentVertexIndex++] = (float)row * tileSet.getTileHeight();// position Y
 			vertices[row][currentVertexIndex++] = 0; // texture X
 			vertices[row][currentVertexIndex++] = 0; // texture Y
 		} else {
-			vertices[row][currentVertexIndex++] = (float)col * tileSet.tileWidth;// position X
-			vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.tileHeight;// position Y
+			vertices[row][currentVertexIndex++] = (float)col * tileSet.getTileWidth();// position X
+			vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.getTileHeight();// position Y
 			vertices[row][currentVertexIndex++] = 0; // texture U
 			vertices[row][currentVertexIndex++] = 0; // texture V
 			
-			vertices[row][currentVertexIndex++] = (float)col * tileSet.tileWidth;// position X
-			vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.tileHeight;// position Y
+			vertices[row][currentVertexIndex++] = (float)col * tileSet.getTileWidth();// position X
+			vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.getTileHeight();// position Y
 			vertices[row][currentVertexIndex++] = 0; // texture U
 			vertices[row][currentVertexIndex++] = 0; // texture V
 			
-			vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.tileWidth;// position X
-			vertices[row][currentVertexIndex++] = (float)row * tileSet.tileHeight;// position Y
+			vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.getTileWidth();// position X
+			vertices[row][currentVertexIndex++] = (float)row * tileSet.getTileHeight();// position Y
 			vertices[row][currentVertexIndex++] = 0; // texture X
 			vertices[row][currentVertexIndex++] = 0; // texture Y
 			
-			vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.tileWidth;// position X
-			vertices[row][currentVertexIndex++] = (float)row * tileSet.tileHeight;// position Y
+			vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.getTileWidth();// position X
+			vertices[row][currentVertexIndex++] = (float)row * tileSet.getTileHeight();// position Y
 			vertices[row][currentVertexIndex++] = 0; // texture X
 			vertices[row][currentVertexIndex++] = 0; // texture Y			
 		}
 	}
 
-	void addTile(int row, int col, int tile){
+	private void addTile(int row, int col, int tile){
 		for (currentTileVertex = 0; currentTileVertex < 4; currentTileVertex++) {
 			if (col % 2 == 0) {
 				switch (currentTileVertex) {
 				case 0: // bottom left corner
-					vertices[row][currentVertexIndex++] = (float)col * tileSet.tileWidth;// position X
-					vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.tileHeight;// position Y
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x) / tileSet.texture.getWidth(); //texture U
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y) / tileSet.texture.getHeight(); // texture V
+					vertices[row][currentVertexIndex++] = (float)col * tileSet.getTileWidth();// position X
+					vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.getTileHeight();// position Y
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x) / tileSet.getTexture().getWidth(); //texture U
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y) / tileSet.getTexture().getHeight(); // texture V
 					break;
 				case 1: // top left corner
-					vertices[row][currentVertexIndex++] = (float)col * tileSet.tileWidth;// position X
-					vertices[row][currentVertexIndex++] = (float)row * tileSet.tileHeight;// position Y
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x) / tileSet.texture.getWidth(); // texture U
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y + tileSet.getRegion(tile).height) / tileSet.texture.getHeight(); // texture V
+					vertices[row][currentVertexIndex++] = (float)col * tileSet.getTileWidth();// position X
+					vertices[row][currentVertexIndex++] = (float)row * tileSet.getTileHeight();// position Y
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x) / tileSet.getTexture().getWidth(); // texture U
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y + tileSet.getRegion(tile).height) / tileSet.getTexture().getHeight(); // texture V
 					break;
 				case 2: // bottom right corner
-					vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.tileWidth;// position X
-					vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.tileHeight;// position Y
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x + tileSet.getRegion(tile).width) / tileSet.texture.getWidth(); // texture X
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y) / tileSet.texture.getHeight(); // texture Y
+					vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.getTileWidth();// position X
+					vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.getTileHeight();// position Y
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x + tileSet.getRegion(tile).width) / tileSet.getTexture().getWidth(); // texture X
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y) / tileSet.getTexture().getHeight(); // texture Y
 					break;
 				case 3: // top right corner
-					vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.tileWidth;// position X
-					vertices[row][currentVertexIndex++] = (float)row * tileSet.tileHeight;// position Y
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x + tileSet.getRegion(tile).width) / tileSet.texture.getWidth(); // texture X
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y + tileSet.getRegion(tile).height) / tileSet.texture.getHeight(); // texture Y
+					vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.getTileWidth();// position X
+					vertices[row][currentVertexIndex++] = (float)row * tileSet.getTileHeight();// position Y
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x + tileSet.getRegion(tile).width) / tileSet.getTexture().getWidth(); // texture X
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y + tileSet.getRegion(tile).height) / tileSet.getTexture().getHeight(); // texture Y
 					break;
 				}
 			} else {
 				switch (currentTileVertex) {
 				case 0: // top left corner
-					vertices[row][currentVertexIndex++] = (float)col * tileSet.tileWidth;// position X
-					vertices[row][currentVertexIndex++] = (float)row * tileSet.tileHeight;// position Y
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x) / tileSet.texture.getWidth(); // texture X
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y + tileSet.getRegion(tile).height) / tileSet.texture.getHeight(); // texture Y
+					vertices[row][currentVertexIndex++] = (float)col * tileSet.getTileWidth();// position X
+					vertices[row][currentVertexIndex++] = (float)row * tileSet.getTileHeight();// position Y
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x) / tileSet.getTexture().getWidth(); // texture X
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y + tileSet.getRegion(tile).height) / tileSet.getTexture().getHeight(); // texture Y
 					break;
 				case 1: // top right corner
-					vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.tileWidth;// position X
-					vertices[row][currentVertexIndex++] = (float)row * tileSet.tileHeight;// position Y
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x + tileSet.getRegion(tile).width) / tileSet.texture.getWidth(); // texture X
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y + tileSet.getRegion(tile).height) / tileSet.texture.getHeight(); // texture Y
+					vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.getTileWidth();// position X
+					vertices[row][currentVertexIndex++] = (float)row * tileSet.getTileHeight();// position Y
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x + tileSet.getRegion(tile).width) / tileSet.getTexture().getWidth(); // texture X
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y + tileSet.getRegion(tile).height) / tileSet.getTexture().getHeight(); // texture Y
 					break;
 				case 2: // bottom left corner
-					vertices[row][currentVertexIndex++] = (float)col * tileSet.tileWidth;// position X
-					vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.tileHeight;// position Y
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x) / tileSet.texture.getWidth(); // texture X
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y) / tileSet.texture.getHeight(); // texture Y
+					vertices[row][currentVertexIndex++] = (float)col * tileSet.getTileWidth();// position X
+					vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.getTileHeight();// position Y
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x) / tileSet.getTexture().getWidth(); // texture X
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y) / tileSet.getTexture().getHeight(); // texture Y
 					break;
 				case 3: // bottom right corner
-					vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.tileWidth;// position X
-					vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.tileHeight;// position Y
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x + tileSet.getRegion(tile).width) / tileSet.texture.getWidth(); // texture X
-					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y) / tileSet.texture.getHeight(); // texture Y
+					vertices[row][currentVertexIndex++] = (float)(col + 1) * tileSet.getTileWidth();// position X
+					vertices[row][currentVertexIndex++] = (float)(row + 1) * tileSet.getTileHeight();// position Y
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).x + tileSet.getRegion(tile).width) / tileSet.getTexture().getWidth(); // texture X
+					vertices[row][currentVertexIndex++] = (float)(tileSet.getRegion(tile).y) / tileSet.getTexture().getHeight(); // texture Y
 					break;
 				}
 			}
@@ -189,8 +189,8 @@ public class TiledLayerMesh {
 		Gdx.gl10.glEnable(GL10.GL_TEXTURE_2D);
 		Gdx.gl10.glEnable(GL10.GL_CULL_FACE);
 
-		tileSet.texture.bind();
-		for(int row = 0; row < layer.height; row++){
+		tileSet.getTexture().bind();
+		for(int row = 0; row < layer.getHeight(); row++){
 			mesh[row].render(GL10.GL_TRIANGLE_STRIP);
 		}
 		
@@ -207,14 +207,14 @@ public class TiledLayerMesh {
 		firstRow = getRow(layerHeightPixels - y);
 		if(firstRow < 0) firstRow = 0;
 		lastRow = getRow(layerHeightPixels - y + height) + 1;
-		if(lastRow >= layer.height) lastRow = layer.height - 1;
+		if(lastRow >= layer.getHeight()) lastRow = layer.getHeight() - 1;
 		
 		firstCol = getCol(x);
 		if(firstCol < 0) firstCol = 0;
 		lastCol = getCol(width) + 1;
-		if(lastCol >= layer.width) lastCol = layer.width - 1;
+		if(lastCol >= layer.getWidth()) lastCol = layer.getWidth() - 1;
 		
-		tileSet.texture.bind();
+		tileSet.getTexture().bind();
 		for(int row = firstRow; row < lastRow; row++){
 			mesh[row].render(GL10.GL_TRIANGLE_STRIP, firstCol * 4, (lastCol - firstCol) * 4);
 		}
@@ -230,19 +230,19 @@ public class TiledLayerMesh {
 
 	int getRow(int worldY){
 		if(worldY < 0) return 0;
-		if(worldY > layerHeightPixels) return tileSet.tileHeight - 1;
-		return worldY/tileSet.tileHeight;
+		if(worldY > layerHeightPixels) return tileSet.getTileHeight() - 1;
+		return worldY/tileSet.getTileHeight();
 	}
 	
 	int getCol(int worldX){
 		if(worldX < 0) return 0;
-		if(worldX > layerWidthPixels) return tileSet.tileWidth - 1;
-		return worldX/tileSet.tileWidth;
+		if(worldX > layerWidthPixels) return tileSet.getTileWidth() - 1;
+		return worldX/tileSet.getTileWidth();
 	}
 	
 	void dispose() {
 		if (mesh != null)
-			for(int row = 0; row < layer.height; row++){
+			for(int row = 0; row < layer.getHeight(); row++){
 				if(mesh[row] != null) mesh[row].dispose();
 			}
 	}

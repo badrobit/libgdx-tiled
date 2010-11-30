@@ -3,8 +3,16 @@
 	<classpathentry excluding="**/.svn/*" kind="src" path="src"/>
 	<classpathentry excluding="**/.svn/*" kind="src" path="gen"/>
 	<classpathentry kind="src" path="/MyRPGDesktop"/>
-	<classpathentry kind="lib" path="libs/gdx-backend-android.jar"/>
-	<classpathentry kind="lib" path="libs/gdx.jar"/>
+	<classpathentry kind="lib" path="libs/gdx-backend-android.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Users/dave/workspaces/libgdx/docs/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/gdx.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Users/dave/workspaces/libgdx/docs/api/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Android 2.2"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/libgdx-tiled-desktop"/>

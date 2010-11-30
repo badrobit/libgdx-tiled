@@ -23,16 +23,15 @@ import com.badlogic.gdx.graphics.Texture.TextureWrap;
 //stores the tile set and associated regions
 //would be better if this could load multiple files and combine them to form one large texture
 public class TileSet {
-	String path;
-	int firstgid;
-	int tileWidth;
-	int tileHeight;
-	int spacing;
-	int margin;
-	FileType type;
+	private String path;
+	private int firstgid;
+	private int tileWidth, tileHeight;
+	private int spacing;
+	private int margin;
+	private FileType type;
 	
-	Texture texture;
-	TextureRegion[] region;
+	private Texture texture;
+	private TextureRegion[] region;
 	private int numRows, numCols, numTiles;
 	
 	TileSet(String path, FileType type, int tileWidth, int tileHeight, int firstgid, int spacing, int margin){
@@ -63,7 +62,7 @@ public class TileSet {
 			for(int col = 0; col < numCols; col++){
 				region[tile] = new TextureRegion(texture, x, y, tileWidth, tileHeight);
 				tile++;
-				x += tileWidth + spacing;
+				x += getTileWidth() + spacing;
 				if(x >= texture.getWidth()){ //end of row
 					x = margin;
 					y += tileHeight + spacing;
@@ -74,5 +73,37 @@ public class TileSet {
 
 	TextureRegion getRegion(int tile){
 		return region[tile - firstgid];
+	}
+
+	public int getTileWidth() {
+		return tileWidth;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public int getFirstgid() {
+		return firstgid;
+	}
+
+	public int getTileHeight() {
+		return tileHeight;
+	}
+
+	public int getSpacing() {
+		return spacing;
+	}
+
+	public int getMargin() {
+		return margin;
+	}
+
+	public FileType getType() {
+		return type;
+	}
+
+	public Texture getTexture() {
+		return texture;
 	}
 }
