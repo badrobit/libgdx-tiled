@@ -190,6 +190,12 @@ public class TiledMapFactory extends DefaultHandler{
     {
     	switch(state){
     	case DATA:
+    		//TODO: instead of uncompressing here, do so in endElement.
+    		//All characters between data beginning and ending should be
+    		//concatenated, then trimmed immediately before uncompressing.
+    		//This will clean up code and allow for the entire map not coming in one
+    		//call to characters, better fitting the SAX spec.
+    		
     		GZIPInputStream GZIS = null;
     		dataString = String.copyValueOf(ch, start, length).trim();
     		System.out.println("Data: \"" + dataString + "\"");

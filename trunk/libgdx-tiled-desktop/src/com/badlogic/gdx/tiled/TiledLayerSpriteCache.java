@@ -71,6 +71,7 @@ public class TiledLayerSpriteCache {
 	private int addBlock(int blockRow, int blockCol){
 		int tile;
 		cache.beginCache();
+		float u, u2, v, v2;
 		
 		int tileRow = blockRow*tilesPerBlockRow;
 		int tileCol = blockCol*tilesPerBlockCol;
@@ -78,15 +79,15 @@ public class TiledLayerSpriteCache {
 		float x = tileCol*tileSet.getTileWidth();
 		float y = tileRow*tileSet.getTileHeight();
 		
-		outer: for(int row = 0; row < tilesPerBlockRow && tileRow < (layer.getHeight() - 1); row++){
-			inner: for(int col = 0; col < tilesPerBlockCol && tileCol < (layer.getWidth() - 1); col++){
+		for(int row = 0; row < tilesPerBlockRow && tileRow < (layer.getHeight() - 1); row++){
+			for(int col = 0; col < tilesPerBlockCol && tileCol < (layer.getWidth() - 1); col++){
 				tile = layer.map[layer.getHeight() - tileRow - 1][tileCol];
 				if(tile != 0){
 					TextureRegion region = tileSet.getRegion(tile);
-					float u = (float)region.x/(float)tileSet.getTexture().getWidth();
-					float v2 = (float)region.y/(float)tileSet.getTexture().getHeight();
-					float u2 = (float)(region.x + region.width)/(float)tileSet.getTexture().getWidth();
-					float v = (float)(region.y + region.height)/(float)tileSet.getTexture().getHeight();
+					u = (float)region.x/(float)tileSet.getTexture().getWidth();
+					v2 = (float)region.y/(float)tileSet.getTexture().getHeight();
+					u2 = (float)(region.x + region.width)/(float)tileSet.getTexture().getWidth();
+					v = (float)(region.y + region.height)/(float)tileSet.getTexture().getHeight();
 					cache.add(tileSet.getTexture(), x, y, tileSet.getTileWidth(), tileSet.getTileHeight(), u, v, u2, v2, Color.WHITE.toFloatBits());
 				}
 				x += tileSet.getTileWidth();
@@ -102,6 +103,7 @@ public class TiledLayerSpriteCache {
 	}
 	
 	//TODO: add render funtions that accept a shaderprogram for GLES 2 rendering
+	
 	//This function should not be used most of the time. Use render(int x, int y, int width, int height) instead.
 	int renderRow, renderCol;
 	public void render() {
@@ -115,7 +117,7 @@ public class TiledLayerSpriteCache {
 		cache.end();	
 	}
 	
-	private int firstRow, firstCol, lastRow, lastCol;
+	//private int firstRow, firstCol, lastRow, lastCol;
 	
 	public void render(int x, int y, int width, int height) {
 		//TODO: only render visible blocks
