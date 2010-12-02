@@ -34,27 +34,24 @@ import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.WindowedMean;
-import com.badlogic.gdx.tiled.TiledLayerMesh;
 import com.badlogic.gdx.tiled.TiledLayerSpriteCache;
 import com.badlogic.gdx.tiled.TiledMap;
 import com.badlogic.gdx.tiled.TiledMapFactory;
 
 public class MyRPG implements ApplicationListener {	
 	SpriteBatch spriteBatch;
-	Texture texture;
 	BitmapFont font;
-	Vector2 textPosition = new Vector2(100, 100);
-	Vector2 textDirection = new Vector2(1, 1);
+	
+	Vector2 mapPosition = new Vector2(100,100);
+	Vector2 mapDirection = new Vector2(1,1);
 	
 	TiledMapFactory tmFactory;
-	//ArrayList<TiledLayerMesh> tmMesh;
 	ArrayList<TiledLayerSpriteCache> tmSpriteCache;
 	TiledMap map;
 	
 	WindowedMean renderTime;
-	
-	//TODO: create a state machine that has states for:
-	//loading, paused and/or menu, running environment, running fight, etc.
+	float renderTimeMean;
+	float timeSinceLastUpdate;
 	
 	@Override public void dispose () {
 		
@@ -67,39 +64,55 @@ public class MyRPG implements ApplicationListener {
 		int i;
 		
 		Gdx.graphics.getGL10().glClear(GL10.GL_COLOR_BUFFER_BIT);
-
-		if (textPosition.x < 0 || textPosition.x > Gdx.graphics.getWidth()) textDirection.x = -textDirection.x;
-		if (textPosition.y < 0 || textPosition.y > Gdx.graphics.getHeight()) textDirection.y = -textDirection.y;
-
-		textPosition.add(textDirection.tmp().mul(Gdx.graphics.getDeltaTime()).mul(60));
+		
+		mapPosition.add(mapDirection.tmp().mul(Gdx.graphics.getDeltaTime()).mul(60));
+		
+		if (mapPosition.x < 0){
+			mapPosition.x = 0;
+			mapDirection.x = 1;
+		}
+		if (mapPosition.x > (tmSpriteCache.get(0).getLayerWidthPixels() - Gdx.graphics.getWidth())){
+			mapPosition.x = tmSpriteCache.get(0).getLayerWidthPixels() - Gdx.graphics.getWidth();
+			mapDirection.x = -1;
+		}
+		if (mapPosition.y < 0){
+			mapPosition.y = 0;
+			mapDirection.y = 1;
+		}
+		if (mapPosition.y > (tmSpriteCache.get(0).getLayerHeightPixels() - Gdx.graphics.getHeight())){
+			mapPosition.y = tmSpriteCache.get(0).getLayerHeightPixels() - Gdx.graphics.getHeight();
+			mapDirection.y = -1;
+		}
 		
 		long startTime = System.nanoTime();
-				
+		
 		for(i = 0; i < tmSpriteCache.size(); i++){
-			tmSpriteCache.get(i).render(0, tmSpriteCache.get(i).getLayerHeightPixels(), Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-			tmSpriteCache.get(i).getTransformMatrix().setToTranslation(-textPosition.x, -textPosition.y, 1f);
+			tmSpriteCache.get(i).getTransformMatrix().setToTranslation(-mapPosition.x, -mapPosition.y, 1f);
+			tmSpriteCache.get(i).render((int)mapPosition.x, (int)mapPosition.y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		}
-		/*
-		for(i = 0; i < tmMesh.size(); i++){
-			tmMesh.get(i).render(0, tmMesh.get(i).getLayerHeightPixels(), Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		}
-		*/
+		
 		long endTime = System.nanoTime();
 		renderTime.addValue(endTime - startTime);
 		
+		timeSinceLastUpdate += Gdx.graphics.getDeltaTime();		
+		if(timeSinceLastUpdate > 0.1){
+			renderTimeMean = renderTime.getMean()/1000;
+			timeSinceLastUpdate = 0;
+		}
+		
 		spriteBatch.begin();
-		spriteBatch.draw(texture, centerX - texture.getWidth() / 2, centerY - texture.getHeight() / 2, 0, 0, texture.getWidth(),
-			texture.getHeight(), Color.WHITE);
-		
-		
-		font.draw(spriteBatch, "Hello World!", (int)textPosition.x, (int)textPosition.y);
-		font.draw(spriteBatch, "Map Render Time (nS): " + renderTime.getMean(), 20, 20);
+			font.draw(spriteBatch, "Map Render Time (uS): " + renderTimeMean, 20, 20);
 		spriteBatch.end();
 	}
 
 	@Override public void resize (int width, int height) {
+		int i;
 		spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
-		textPosition.set(0,0);
+		for(i=0; i < tmSpriteCache.size(); i++){
+			tmSpriteCache.get(i).getProjectionMatrix().setToOrtho2D(0, 0, width, height);
+		}
+		
+		mapPosition.set(0,0);
 	}
 
 	@Override public void create () {
@@ -109,8 +122,6 @@ public class MyRPG implements ApplicationListener {
 		font = new BitmapFont();
 		font.setColor(Color.RED);
 		
-		texture = Gdx.graphics.newTexture(Gdx.files.getFileHandle("data/arrow.png", FileType.Internal), TextureFilter.Linear,
-			TextureFilter.Linear, TextureWrap.ClampToEdge, TextureWrap.ClampToEdge);
 		spriteBatch = new SpriteBatch();
 		 
 		tmFactory = new TiledMapFactory();
@@ -118,10 +129,8 @@ public class MyRPG implements ApplicationListener {
 		map = tmFactory.createMap("data/tilemap.tmx", "data/", FileType.Internal);
 		
 		tmSpriteCache = new ArrayList<TiledLayerSpriteCache>(map.layer.size());
-		//tmMesh = new ArrayList<TiledLayerMesh>(map.layer.size());
 		for(i = 0; i < map.layer.size(); i++){
-			//tmMesh.add(new TiledLayerMesh(map.layer.get(i), map.tileSet.get(i)));
-			tmSpriteCache.add(new TiledLayerSpriteCache(map.layer.get(i), map.tileSet.get(i), Gdx.graphics.getWidth()/(2*map.tileSet.get(i).getTileWidth()), Gdx.graphics.getHeight()/(2*map.tileSet.get(i).getTileHeight())));
+			tmSpriteCache.add(new TiledLayerSpriteCache(map.layer.get(i), map.tileSet.get(i), (int)(Gdx.graphics.getWidth()/(2*map.tileSet.get(i).tileWidth)), (int)(Gdx.graphics.getHeight()/(2*map.tileSet.get(i).tileHeight))));
 		}
 	}
 

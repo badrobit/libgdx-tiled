@@ -23,16 +23,16 @@ import com.badlogic.gdx.graphics.Texture.TextureWrap;
 //stores the tile set and associated regions
 //would be better if this could load multiple files and combine them to form one large texture
 public class TileSet {
-	private String path;
-	private int firstgid;
-	private int tileWidth, tileHeight;
-	private int spacing;
-	private int margin;
-	private FileType type;
+	public final String path;
+	public final int firstgid;
+	public final int tileWidth, tileHeight;
+	public final int spacing;
+	public final int margin;
+	public final FileType type;
 	
 	private Texture texture;
 	private TextureRegion[] region;
-	private int numRows, numCols, numTiles;
+	public final int numRows, numCols, numTiles;
 	
 	TileSet(String path, FileType type, int tileWidth, int tileHeight, int firstgid, int spacing, int margin){
 		this.path = path;
@@ -43,11 +43,6 @@ public class TileSet {
 		this.spacing = spacing;
 		this.margin = margin;
 		
-		loadTexture();
-	}
-	
-	//loads textures and fills the texture region array
-	private void loadTexture(){
 		texture = Gdx.graphics.newTexture(Gdx.files.getFileHandle(path, type), TextureFilter.Linear, TextureFilter.Linear, TextureWrap.ClampToEdge, TextureWrap.ClampToEdge);
 		
 		//TODO: test texture with margins and spacing
@@ -57,12 +52,17 @@ public class TileSet {
 		
 		region = new TextureRegion[numTiles];
 		
+		fillRegions();
+	}
+	
+	//loads textures and fills the texture region array
+	private void fillRegions(){
 		int x = margin, y = margin, tile = 0;
 		for(int row = 0; row < numRows; row++){
 			for(int col = 0; col < numCols; col++){
 				region[tile] = new TextureRegion(texture, x, y, tileWidth, tileHeight);
 				tile++;
-				x += getTileWidth() + spacing;
+				x += tileWidth + spacing;
 				if(x >= texture.getWidth()){ //end of row
 					x = margin;
 					y += tileHeight + spacing;
@@ -73,34 +73,6 @@ public class TileSet {
 
 	TextureRegion getRegion(int tile){
 		return region[tile - firstgid];
-	}
-
-	public int getTileWidth() {
-		return tileWidth;
-	}
-
-	public String getPath() {
-		return path;
-	}
-
-	public int getFirstgid() {
-		return firstgid;
-	}
-
-	public int getTileHeight() {
-		return tileHeight;
-	}
-
-	public int getSpacing() {
-		return spacing;
-	}
-
-	public int getMargin() {
-		return margin;
-	}
-
-	public FileType getType() {
-		return type;
 	}
 
 	public Texture getTexture() {
