@@ -17,8 +17,13 @@
 package nEx.Software.Maps.Loaders.Tiled;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -39,6 +44,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.badlogic.gdx.Files.FileType;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.Gdx;
 
 public class TiledMapLoader
@@ -357,7 +363,6 @@ public class TiledMapLoader
 								for (int tileY = 0; tileY < TiledMapTileLayer.getHeight(); tileY++)
 								{
 									int offset = current * 4;
-									
 									TiledMapTileLayer.getTiles()[tileX][tileY]
 	        						=
 	        						TiledMap.getTiles().get
@@ -379,7 +384,72 @@ public class TiledMapLoader
 						{
 							if (dataCompression.equals("gzip"))
 							{
-								// TODO: Surely there is something that must be done here
+					    		try
+					    		{
+									byte[] tiles = Base64Coder.decode(StringBuilder.toString());
+									GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(tiles), tiles.length);
+									for (int tileX = 0; tileX < TiledMapTileLayer.getWidth(); tileX++)
+									{
+										for (int tileY = 0; tileY < TiledMapTileLayer.getHeight(); tileY++)
+										{
+											TiledMapTileLayer.getTiles()[tileX][tileY]
+			        						=
+			        						TiledMap.getTiles().get
+			        						(
+			        							gzip.read()
+		        								|
+		        								gzip.read() << 8
+		        							    |
+		        							    gzip.read() << 16
+		        							    |
+		        							    gzip.read() << 24
+			        						);
+											current++;
+										}
+									}									
+								}
+					    		catch (IOException e)
+					    		{
+									throw new GdxRuntimeException(e.getMessage());									
+								}
+					    		StringBuilder.setLength(0);	
+							}
+							else
+							if (dataCompression.equals("zlib"))
+							{
+					    		try
+					    		{
+					    			System.out.println("zlib");
+					    			byte[] inf = new byte[4];
+									byte[] tiles = Base64Coder.decode(StringBuilder.toString());
+									Inflater zlib = new Inflater(); zlib.setInput(tiles, 0, tiles.length);
+									zlib.inflate(inf, 0, 4);
+									for (int tileX = 0; tileX < TiledMapTileLayer.getWidth(); tileX++)
+									{
+										for (int tileY = 0; tileY < TiledMapTileLayer.getHeight(); tileY++)
+										{
+											zlib.inflate(inf, 0, 4);
+											TiledMapTileLayer.getTiles()[tileX][tileY]
+			        						=
+			        						TiledMap.getTiles().get
+			        						(
+			        							inf[0]
+		        								|
+		        								inf[1] << 8
+		        							    |
+		        							    inf[2] << 16
+		        							    |
+		        							    inf[3] << 24
+			        						);
+											current++;
+										}
+									}									
+					    		}
+					    		catch (Exception e)
+					    		{
+									throw new GdxRuntimeException(e.getMessage());									
+								}
+					    		StringBuilder.setLength(0);	
 							}
 						}
 					}
