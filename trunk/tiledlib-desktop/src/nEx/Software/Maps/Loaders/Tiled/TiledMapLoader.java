@@ -201,17 +201,30 @@ public class TiledMapLoader
 						final int tileX = (current % TiledMapTileLayer.getWidth());
 						final int tileY = (current / TiledMapTileLayer.getWidth());
 
-						TiledMapTileLayer.getTiles()[tileX][tileY]
-						=
-						TiledMap.getTiles().get
+						int tile = 
+						SafeValues.safeInt
 						(
-							SafeValues.safeInt
-							(
-								attributes.getValue("width")
-								,
-								0
-							)
-						);
+							attributes.getValue("gid")
+							,
+							0
+						)
+						- 1;
+						
+						if (tile >= 0)
+						{
+							TiledMapTileLayer.getTiles()[tileX][tileY]
+    						=
+    						TiledMap.getTiles().get
+    						(
+    							SafeValues.safeInt
+    							(
+    								attributes.getValue("gid")
+    								,
+    								0
+    							)
+    							- 1
+    						);							
+						}
 						current++;
 					}
 				}

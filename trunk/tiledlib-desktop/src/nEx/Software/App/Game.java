@@ -18,6 +18,9 @@ package nEx.Software.App;
 
 import nEx.Software.Maps.Loaders.Tiled.TiledMapLoader;
 import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMap;
+import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMapLayer;
+import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMapTile;
+import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMapTileLayer;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
@@ -55,19 +58,25 @@ public class Game implements ApplicationListener
 		batch.begin();
 		if (map != null)
 		{	
-			TextureRegion tile = map.getTiles().get(0).getTextureRegion();
-			for(int x = 0; x < 10; x++)
+			TiledMapLayer layer = map.getLayers().get(0);
+			if(layer instanceof TiledMapTileLayer)
 			{
-//				batch.dr
-				batch.draw(tile, x * 32.0f, 0, Color.WHITE);
+				TiledMapTileLayer tileLayer = (TiledMapTileLayer) layer;
+				TiledMapTile tile = tileLayer.getTiles()[10][10];
+				
+				// This will not be the final approach, as it is clearly not "sustainable"
+				// Just wanted to make sure I have something loaded.
+				batch.draw(tile.getTextureRegion(), 0, 0, Color.WHITE);
 			}
+			
 		}
 		batch.end();
 		
-        if(System.nanoTime()-startTime>=1000000000) {
+        if(System.nanoTime()-startTime>=1000000000)
+        {
             Gdx.app.log("TileTest", "fps: " + Gdx.graphics.getFramesPerSecond());
             startTime = System.nanoTime();
-    }
+        }
 	}
 
 	@Override
