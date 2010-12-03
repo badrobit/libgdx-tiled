@@ -50,6 +50,7 @@ public class TiledMapTileLayer extends TiledMapLayer
 		{
 			if (getWidth() > 0 && getHeight() > 0)
 			{
+				locked = true;
 				Tiles = new TiledMapTile[getWidth()][getHeight()];
 			}			
 		}

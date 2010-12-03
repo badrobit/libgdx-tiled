@@ -78,11 +78,12 @@ public class Game implements ApplicationListener
 						}
 					}
 				}
-				System.out.println(cache.endCache());
+				cache.endCache();
 			}
 		}		
 	}
 
+	int counter = 0;
 	@Override
 	public void resume() {
 		// TODO Auto-generated method stub
@@ -146,9 +147,9 @@ public class Game implements ApplicationListener
             Gdx.app.log("TileTest", "fps: " + Gdx.graphics.getFramesPerSecond());
             startTime = System.nanoTime();
         }
-        cam.getPosition().x += 5 * Gdx.graphics.getDeltaTime();
-        if (cam.getPosition().x > map.getWidth() * 32)
-        cam.getPosition().x=0;
+        cam.getPosition().x += 32 * Gdx.graphics.getDeltaTime();
+        if (cam.getPosition().x > (map.getWidth() * 32) + 240)
+        cam.getPosition().x= -240;
 	}
 
 	@Override

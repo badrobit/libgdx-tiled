@@ -19,12 +19,13 @@ package nEx.Software.Maps.Loaders.Tiled;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMap;
+import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMapObjectLayer;
+import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMapTile;
 import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMapTileLayer;
 import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMapTileSet;
 import nEx.Software.Maps.Loaders.Tiled.SafeValues.SafeValues;
@@ -81,8 +82,10 @@ public class TiledMapLoader
 		private final ArrayList<Object> ListOfAnything = new ArrayList<Object>();
 		
 		private TiledMap TiledMap;
+		private TiledMapTile TiledMapTile;
 		private TiledMapTileSet TiledMapTileSet;
 		private TiledMapTileLayer TiledMapTileLayer;
+		private TiledMapObjectLayer TiledMapObjectLayer;
 		
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException
@@ -110,12 +113,22 @@ public class TiledMapLoader
 
 				if (inTile)
 				{
-					Gdx.app.log("TiledMapParser", "Got Tile Property, but we haven't loaded all of our tiles yet. smh");
+					if (TiledMapTile != null)
+					{
+						TiledMapTile.getProperties().put(attributes.getValue("name"), attributes.getValue("value"));
+					}
 				}
 				else
 				if (inLayer)
 				{
-					
+					if (TiledMapTileLayer != null)
+					{
+						TiledMapTileLayer.getProperties().put(attributes.getValue("name"), attributes.getValue("value"));
+					}
+					if (TiledMapObjectLayer != null)
+					{
+						TiledMapObjectLayer.getProperties().put(attributes.getValue("name"), attributes.getValue("value"));
+					}
 				}
 				else
 				if (inObject)
@@ -152,7 +165,7 @@ public class TiledMapLoader
 				}
 				else
 				{
-					System.out.println("external tileset");
+					Gdx.app.log("TiledMapParser", "External Tileset... we need to pass off to TiledMapTileSetLoader");
 				}
 			}
 			else
@@ -190,7 +203,12 @@ public class TiledMapLoader
 				inTile = true;
 				if (inTileSet)
 				{
-					
+					if (TiledMapTileSet != null)
+					{
+						TiledMapTile = new TiledMapTile();
+						TiledMapTile.setGlobalId(TiledMapTileSet.getFirstGid() + SafeValues.safeInt(attributes.getValue("id"), 0));
+						TiledMapTileSet.getTiles().put(TiledMapTile.getGlobalId(), TiledMapTile);
+					}
 				}
 				else
 				if (inData)
@@ -220,6 +238,12 @@ public class TiledMapLoader
 			if (localName.equals("objectgroup"))
 			{
 				inObjectGroup = true;
+				TiledMapObjectLayer = new TiledMapObjectLayer();
+				TiledMapObjectLayer.setName(attributes.getValue("name"));
+				TiledMapObjectLayer.setWidth(SafeValues.safeInt(attributes.getValue("width"), 1));
+				TiledMapObjectLayer.setHeight(SafeValues.safeInt(attributes.getValue("height"), 1));
+				TiledMapObjectLayer.lockSize();
+				
 			}		
 			else
 			if (localName.equals("object"))

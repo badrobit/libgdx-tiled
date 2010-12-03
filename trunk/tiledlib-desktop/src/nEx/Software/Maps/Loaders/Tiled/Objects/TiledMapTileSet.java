@@ -16,6 +16,9 @@
 
 package nEx.Software.Maps.Loaders.Tiled.Objects;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -103,6 +106,22 @@ public class TiledMapTileSet
 	}
 	
 	private
+	Map<Integer, TiledMapTile> Tiles;
+	public Map<Integer, TiledMapTile> getTiles()
+	{
+		return Tiles;	
+	}
+	public void setTiles(Map<Integer, TiledMapTile> value)
+	{
+		Tiles = value;	
+	}
+	
+	public TiledMapTileSet()
+	{
+		Tiles = new HashMap<Integer, TiledMapTile>();
+	}
+	
+	private
 	boolean Loaded;
 	
 	private
@@ -136,8 +155,14 @@ public class TiledMapTileSet
 			{
 				for(int tileX = 0; tileX < tilesX; tileX++)
 				{
-					TiledMapTile tile = new TiledMapTile();
-					tile.setGlobalId(id++);
+					TiledMapTile tile = getTiles().get(id);
+					if (tile == null)
+					{
+						tile = new TiledMapTile();
+						tile.setGlobalId(id);
+					}
+					id++;
+					
 					tile.setTextureRegion
 					(
 						new TextureRegion
@@ -162,6 +187,7 @@ public class TiledMapTileSet
 					map.getTiles().put(tile.getGlobalId(), tile);
 				}				
 			}
+			getTiles().clear();
 			Loaded = true;
 		}
 		Loading = false;
