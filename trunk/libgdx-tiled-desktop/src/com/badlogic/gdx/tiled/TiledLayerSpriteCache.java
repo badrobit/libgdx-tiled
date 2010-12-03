@@ -33,7 +33,6 @@ public class TiledLayerSpriteCache {
 	private int layerHeightBlocks, layerWidthBlocks;
 	private int blockHeightTiles, blockWidthTiles;
 	
-	private int blockRowMultiplier, blockColMultiplier;
     /**
      * Draws a Tiled layer using a Sprite Cache
      * @param layer The layer to be drawn
@@ -84,8 +83,8 @@ public class TiledLayerSpriteCache {
 		float x = tileCol*tileSet.tileWidth;
 		float y = tileRow*tileSet.tileHeight;
 		
-		for(int row = 0; row < blockHeightTiles && tileRow < (layer.getHeight() - 1); row++){
-			for(int col = 0; col < blockWidthTiles && tileCol < (layer.getWidth() - 1); col++){
+		for(int row = 0; row < blockHeightTiles && tileRow < layer.getHeight(); row++){
+			for(int col = 0; col < blockWidthTiles && tileCol < layer.getWidth(); col++){
 				tile = layer.map[layer.getHeight() - tileRow - 1][tileCol];
 				if(tile != 0){
 					TextureRegion region = tileSet.getRegion(tile);
