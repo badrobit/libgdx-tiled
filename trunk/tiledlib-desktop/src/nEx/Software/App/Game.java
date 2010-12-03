@@ -58,17 +58,34 @@ public class Game implements ApplicationListener
 		batch.begin();
 		if (map != null)
 		{	
-			TiledMapLayer layer = map.getLayers().get(0);
-			if(layer instanceof TiledMapTileLayer)
-			{
-				TiledMapTileLayer tileLayer = (TiledMapTileLayer) layer;
-				TiledMapTile tile = tileLayer.getTiles()[10][10];
-				
-				// This will not be the final approach, as it is clearly not "sustainable"
-				// Just wanted to make sure I have something loaded.
-				batch.draw(tile.getTextureRegion(), 0, 0, Color.WHITE);
-			}
+			int layers = map.getLayers().size();
 			
+			for (int index = 0; index < layers; index++)
+			{
+				TiledMapLayer layer
+				=
+				map.getLayers().get(index);
+				if(layer instanceof TiledMapTileLayer)
+				{
+					TiledMapTileLayer tileLayer = (TiledMapTileLayer) layer;
+					
+					// This will not be the final approach, as it is clearly not "sustainable"
+					// Just wanted to make sure I have something loaded.
+					// Here, we have approximately 30 FPS on ADP2
+					for (int x = 0; x < 15; x++)
+					{
+						for (int y = 0; y < 10; y++)
+						{
+							TiledMapTile tile = tileLayer.getTiles()[x][y];
+							if (tile != null)
+							{
+								batch.draw(tile.getTextureRegion(), x * 32, y * 32, Color.WHITE);
+							}
+							
+						}
+					}
+				}				
+			}
 		}
 		batch.end();
 		

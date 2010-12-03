@@ -159,7 +159,7 @@ public class TiledMapTileSet
 						x = getTileMargin();
 						y += getTileHeight() + getTileSpacing();
 					}
-					map.getTiles().add(tile);
+					map.getTiles().put(tile.getGlobalId(), tile);
 				}				
 			}
 			Loaded = true;

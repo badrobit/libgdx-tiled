@@ -112,14 +112,14 @@ public class TiledMap
 	{
 		Textures = value;
 	}
-	
+
 	private
-	List<TiledMapTile> Tiles;
-	public List<TiledMapTile> getTiles()
+	Map<Integer, TiledMapTile> Tiles;
+	public Map<Integer, TiledMapTile> getTiles()
 	{
 		return Tiles;	
 	}
-	public void setTiles(List<TiledMapTile> value)
+	public void setTiles(Map<Integer, TiledMapTile> value)
 	{
 		Tiles = value;	
 	}
@@ -138,8 +138,8 @@ public class TiledMap
 	public TiledMap()
 	{
 		Textures = new ArrayList<Texture>();
-		Tiles = new LinkedList<TiledMapTile>();
 		Layers = new LinkedList<TiledMapLayer>();
 		Properties = new HashMap<String, String>();	
+		Tiles = new HashMap<Integer, TiledMapTile>();
 	}
 }
