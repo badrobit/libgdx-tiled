@@ -46,7 +46,7 @@ public class Game implements ApplicationListener
 	public void create()
 	{
 		batch = new SpriteBatch();
-		map = TiledMapLoader.loadTiledMap(Gdx.files.internal("tilemap2.tmx").read());
+		map = TiledMapLoader.loadTiledMap(Gdx.files.internal("base64-none.tmx").read());
 
 		cam = new OrthographicCamera();
 		cam.setViewport(480, 320);

@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import nEx.Software.App.Utilities.Base64Coder;
 import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMap;
+import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMapObject;
 import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMapObjectLayer;
 import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMapTile;
 import nEx.Software.Maps.Loaders.Tiled.Objects.TiledMapTileLayer;
@@ -78,14 +80,20 @@ public class TiledMapLoader
 		
 		private int current;
 		
-		private final StringBuilder mStringBuilder = new StringBuilder();
+		private String dataEncoding;
+		private String dataCompression;
+		
+		private final StringBuilder StringBuilder = new StringBuilder();
 		private final ArrayList<Object> ListOfAnything = new ArrayList<Object>();
 		
 		private TiledMap TiledMap;
 		private TiledMapTile TiledMapTile;
 		private TiledMapTileSet TiledMapTileSet;
 		private TiledMapTileLayer TiledMapTileLayer;
+		
+		private TiledMapObject TiledMapObject;
 		private TiledMapObjectLayer TiledMapObjectLayer;
+		
 		
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException
@@ -133,12 +141,18 @@ public class TiledMapLoader
 				else
 				if (inObject)
 				{
-
+					if (TiledMapObject != null)
+					{
+						TiledMapObject.getProperties().put(attributes.getValue("name"), attributes.getValue("value"));
+					}
 				}
 				else
 				if (inObjectGroup)
 				{
-					
+					if (TiledMapObjectLayer != null)
+					{
+						TiledMapObjectLayer.getProperties().put(attributes.getValue("name"), attributes.getValue("value"));
+					}					
 				}
 				else
 				if (inMap)
@@ -176,10 +190,6 @@ public class TiledMapLoader
 				{
 					TiledMapTileSet.setImageSource(attributes.getValue("source"));
 				}
-				else
-				{
-					Gdx.app.log("TiledMapParser", "Got Image, but no TileSet...");
-				}
 			}		
 			else
 			if (localName.equals("layer"))
@@ -196,6 +206,8 @@ public class TiledMapLoader
 			if (localName.equals("data"))
 			{
 				inData = true;
+				dataEncoding = attributes.getValue("encoding");
+				dataCompression = attributes.getValue("compression");
 			}
 			else
 			if (localName.equals("tile"))
@@ -249,11 +261,18 @@ public class TiledMapLoader
 			if (localName.equals("object"))
 			{
 				inObject = true;
+				TiledMapObject = new TiledMapObject();
+				TiledMapObject.setName(attributes.getValue("name"));
+				TiledMapObject.setPosX(SafeValues.safeInt(attributes.getValue("x"), 0));
+				TiledMapObject.setPosY(SafeValues.safeInt(attributes.getValue("y"), 0));				
+				TiledMapObject.setWidth(SafeValues.safeInt(attributes.getValue("width"), 0));
+				TiledMapObject.setHeight(SafeValues.safeInt(attributes.getValue("height"), 0));
 			}
 		}
 
 		@Override
-		public void endElement(String uri, String localName, String qName) throws SAXException {
+		public void endElement(String uri, String localName, String qName) throws SAXException
+		{
 			if (localName.equals("map"))
 			{
 				inMap = false;
@@ -289,7 +308,6 @@ public class TiledMapLoader
 				inLayer = false;
 				if(TiledMapTileLayer != null)
 				{
-					Gdx.app.log("TiledMapParser", TiledMapTileLayer.getName());
 					TiledMap.getLayers().add(TiledMapTileLayer);
 				}
 			}
@@ -297,28 +315,113 @@ public class TiledMapLoader
 			if (localName.equals("data"))
 			{
 				inData = false;
+				if (dataEncoding != null)
+				{
+					if(dataEncoding.equals("csv"))
+					{
+						current = 0;
+						String[] tiles
+						=
+						StringBuilder.toString().replaceAll(" ", "").split(",");
+						for (int tileX = 0; tileX < TiledMapTileLayer.getWidth(); tileX++)
+						{
+							for (int tileY = 0; tileY < TiledMapTileLayer.getHeight(); tileY++)
+							{
+								TiledMapTileLayer.getTiles()[tileX][tileY]
+        						=
+        						TiledMap.getTiles().get
+        						(
+        							SafeValues.safeInt
+        							(
+        								tiles[current]
+        								,
+        								0
+        							)
+        						);
+								current++;
+							}
+						}
+						StringBuilder.setLength(0);
+					}
+					else
+					if(dataEncoding.equals("base64"))
+					{
+						if(dataCompression == null)
+						{
+							byte[] tiles
+							=
+							Base64Coder.decode(StringBuilder.toString());
+							StringBuilder.toString().replaceAll(" ", "").split(",");
+							for (int tileX = 0; tileX < TiledMapTileLayer.getWidth(); tileX++)
+							{
+								for (int tileY = 0; tileY < TiledMapTileLayer.getHeight(); tileY++)
+								{
+									int offset = current * 4;
+									
+									TiledMapTileLayer.getTiles()[tileX][tileY]
+	        						=
+	        						TiledMap.getTiles().get
+	        						(
+        								tiles[offset]
+        								|
+        								tiles[offset + 1] << 8
+        							    |
+        							    tiles[offset + 2] << 16
+        							    |
+        							    tiles[offset + 3] << 24
+	        						);
+									current++;
+								}
+							}
+							StringBuilder.setLength(0);							
+						}
+						else
+						{
+							if (dataCompression.equals("gzip"))
+							{
+								// TODO: Surely there is something that must be done here
+							}
+						}
+					}
+				}
 			}
 			else
 			if (localName.equals("tile"))
 			{
 				inTile = false;
+				// TODO: Surely there is something that must be done here
 			}		
 			else
 			if (localName.equals("objectgroup"))
 			{
 				inObjectGroup = false;
+				// TODO: Surely there is something that must be done here
 			}		
 			else
 			if (localName.equals("object"))
 			{
 				inObject = false;
+				if (TiledMapObjectLayer != null)
+				{
+					TiledMapObjectLayer.getObjects().put(TiledMapObject.getName(), TiledMapObject);
+				}
 			}		
 		}
 
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException
 		{
-			mStringBuilder.append(ch, start, length);
+			if (dataEncoding == null || dataEncoding.equals("csv"))
+			{
+				String CharacterData = new String(ch).substring(start, start + length);
+				CharacterData = CharacterData.replaceAll("[^0-9,]", "");
+				StringBuilder.append(CharacterData);
+			}
+			else
+			{
+				String CharacterData = String.copyValueOf(ch, start, length).trim();
+				StringBuilder.append(CharacterData);
+			}
 		}
 		
 		public TiledMap getMap()

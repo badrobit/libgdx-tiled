@@ -16,6 +16,8 @@
 
 package nEx.Software.App;
 
+import nEx.Software.App.Utilities.Base64Coder;
+
 import com.badlogic.gdx.backends.jogl.JoglApplication;
 
 

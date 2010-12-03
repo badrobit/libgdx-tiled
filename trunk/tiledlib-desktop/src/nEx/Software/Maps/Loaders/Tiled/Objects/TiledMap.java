@@ -94,9 +94,7 @@ public class TiledMap
 	}
 	
 	private
-	Map<String, String> Properties
-	=
-	new HashMap<String, String>();
+	Map<String, String> Properties;
 	public Map<String, String> getProperties()
 	{
 		return Properties;

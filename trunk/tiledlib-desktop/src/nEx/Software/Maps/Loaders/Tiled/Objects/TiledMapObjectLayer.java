@@ -1,6 +1,22 @@
 package nEx.Software.Maps.Loaders.Tiled.Objects;
 
-public class TiledMapObjectLayer extends TiledMapLayer {
+import java.util.Map;
+import java.util.HashMap;
+
+public class TiledMapObjectLayer extends TiledMapLayer
+{
+	private
+	Map<String, TiledMapObject> Objects;
+	public Map<String, TiledMapObject> getObjects()
+	{
+		return Objects;
+	}
+	
+	public TiledMapObjectLayer()
+	{
+		Objects = new HashMap<String, TiledMapObject>();
+	}
+	
 	private boolean locked;
 	public void lockSize()
 	{
@@ -9,7 +25,7 @@ public class TiledMapObjectLayer extends TiledMapLayer {
 			if (getWidth() > 0 && getHeight() > 0)
 			{
 				locked = true;
-			}			
+			}
 		}
 	}
 }
