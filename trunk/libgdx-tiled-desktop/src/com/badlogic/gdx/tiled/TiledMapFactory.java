@@ -214,8 +214,8 @@ public class TiledMapFactory extends DefaultHandler{
 				//Read the GZIS data into an array, 4 bytes = 1 GID
 				byte[] readTemp = new byte[4];
 				//see http://sourceforge.net/apps/mediawiki/tiled/index.php?title=Examining_the_map_format
-				for(int row = 0; row < map.layer.get(currentLayer).getHeight(); row++){
-					for(int col = 0; col < map.layer.get(currentLayer).getWidth(); col++){
+				for(int row = 0; row < map.layer.get(currentLayer).height; row++){
+					for(int col = 0; col < map.layer.get(currentLayer).width; col++){
 						try {
 							GZIS.read(readTemp, 0, 4);
 							map.layer.get(currentLayer).map[row][col] = readTemp[0] |  readTemp[1] << 8 | readTemp[2] << 16 | readTemp[3] << 24;

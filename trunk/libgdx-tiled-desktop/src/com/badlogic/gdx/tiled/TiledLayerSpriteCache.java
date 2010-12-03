@@ -47,17 +47,17 @@ public class TiledLayerSpriteCache {
 		blockHeightTiles = blockHeight;
 		blockWidthTiles = blockWidth;
 		
-		layerHeightPixels = layer.getHeight() * tileSet.tileHeight;
-		layerWidthPixels = layer.getWidth() * tileSet.tileWidth;
+		layerHeightPixels = layer.height * tileSet.tileHeight;
+		layerWidthPixels = layer.width * tileSet.tileWidth;
 		
-		layerWidthBlocks = (int) Math.ceil((float)layer.getWidth()/(float)blockWidth);
-		layerHeightBlocks = (int) Math.ceil((float)layer.getHeight()/(float)blockHeight);
+		layerWidthBlocks = (int) Math.ceil((float)layer.width/(float)blockWidth);
+		layerHeightBlocks = (int) Math.ceil((float)layer.height/(float)blockHeight);
 		
 		//blockRowMultiplier = layerHeightBlocks/(blockHeightTiles*tileSet.tileHeight);
 		
 		normalCacheId = new int[layerHeightBlocks][layerWidthBlocks];
 		
-		cache = new SpriteCache(layer.getHeight()*layer.getWidth(), true);
+		cache = new SpriteCache(layer.height*layer.width, false);
 		
 		//FIXME: Don't really need a cache that holds all tiles,
 		//really only need room for all VISIBLE tiles.
@@ -83,16 +83,16 @@ public class TiledLayerSpriteCache {
 		float x = tileCol*tileSet.tileWidth;
 		float y = tileRow*tileSet.tileHeight;
 		
-		for(int row = 0; row < blockHeightTiles && tileRow < layer.getHeight(); row++){
-			for(int col = 0; col < blockWidthTiles && tileCol < layer.getWidth(); col++){
-				tile = layer.map[layer.getHeight() - tileRow - 1][tileCol];
+		for(int row = 0; row < blockHeightTiles && tileRow < layer.height; row++){
+			for(int col = 0; col < blockWidthTiles && tileCol < layer.width; col++){
+				tile = layer.map[layer.height - tileRow - 1][tileCol];
 				if(tile != 0){
 					TextureRegion region = tileSet.getRegion(tile);
-					u = (float)region.x/(float)tileSet.getTexture().getWidth();
-					u2 = (float)(region.x + region.width)/(float)tileSet.getTexture().getWidth();
-					v = (float)(region.y + region.height)/(float)tileSet.getTexture().getHeight();
-					v2 = (float)region.y/(float)tileSet.getTexture().getHeight();
-					cache.add(tileSet.getTexture(), x, y, tileSet.tileWidth, tileSet.tileHeight, u, v, u2, v2, Color.WHITE.toFloatBits());
+					u = (float)region.x/(float)tileSet.texture.getWidth();
+					u2 = (float)(region.x + region.width)/(float)tileSet.texture.getWidth();
+					v = (float)(region.y + region.height)/(float)tileSet.texture.getHeight();
+					v2 = (float)region.y/(float)tileSet.texture.getHeight();
+					cache.add(tileSet.texture, x, y, tileSet.tileWidth, tileSet.tileHeight, u, v, u2, v2, Color.WHITE.toFloatBits());
 				}
 				x += tileSet.tileWidth;
 				tileCol++;

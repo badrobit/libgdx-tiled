@@ -30,7 +30,7 @@ public class TileSet {
 	public final int margin;
 	public final FileType type;
 	
-	private Texture texture;
+	public final Texture texture;
 	private TextureRegion[] region;
 	public final int numRows, numCols, numTiles;
 	
@@ -73,9 +73,5 @@ public class TileSet {
 
 	TextureRegion getRegion(int tile){
 		return region[tile - firstgid];
-	}
-
-	public Texture getTexture() {
-		return texture;
 	}
 }
