@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="lib" path="/libgdx-tiled-desktop/libs/gdx-backend-android.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Users/dave/workspaces/libgdx/docs/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/libgdx-tiled-desktop/libs/gdx.jar" sourcepath="/libgdx-tiled-desktop/libs/gdx-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Users/dave/workspaces/libgdx/docs/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
