@@ -46,7 +46,7 @@ public class TiledMapFactory extends DefaultHandler{
 	private static final int DONE = 2;
 	
 	private int firstgid, tileWidth, tileHeight, margin, spacing;
-	private String dataString;
+	private String dataString, encoding, compression;
 	private byte[] data;
 	
 	//TODO: add object loading
@@ -112,14 +112,10 @@ public class TiledMapFactory extends DefaultHandler{
 			return;
 		}
 		
-		if("data".equals(qName)){
-			//encoding="base64" compression="gzip"
-			if(!"base64".equals(attr.getValue("encoding"))){ //encoding != base64
-				throw new GdxRuntimeException("Only base64 encoding is supported");
-			}
-			if(!"gzip".equals(attr.getValue("compression"))){ //compression != gzip
-				throw new GdxRuntimeException("Only gzip compression is supported");
-			}
+		if("data".equals(qName)){	
+			encoding = attr.getValue("encoding");
+			compression = attr.getValue("compression");
+			dataString = ""; //clear the string for new data
 			state = DATA;
 			return;
 		}
@@ -154,10 +150,25 @@ public class TiledMapFactory extends DefaultHandler{
 	//Currently this may cause strange results if the XML file is malformed
 	@Override
 	public void endElement(String uri, String name, String qName) {
-		
 		System.out.println("End element: " + qName);
 				
 		if("data".equals(qName)){
+    		if(dataString == null | "".equals(dataString)) return;
+    		
+			//decode the data
+			if("base64".equals(encoding)){ //encoding != base64
+				data = Base64Coder.decode(dataString.trim());
+			} else {
+				throw new GdxRuntimeException("Unsupported encoding, only base64 supported");
+			}
+			
+			//uncompress the data
+			if("gzip".equals(compression)){
+				unGZip();
+			} else {
+				throw new GdxRuntimeException("Unsupported compression, only gzip supported");
+			}
+			
 			state = LOADING;
 			return;
 		}
@@ -179,6 +190,31 @@ public class TiledMapFactory extends DefaultHandler{
 		}
 	}
 	
+	private void unGZip(){
+		GZIPInputStream GZIS = null;
+		try {
+			GZIS = new GZIPInputStream(new ByteArrayInputStream(data), data.length);
+		} catch (IOException e) {
+			throw new GdxRuntimeException("Error Reading TMX Layer Data - IOException: " + e.getMessage());
+		} finally {
+			//Read the GZIS data into an array, 4 bytes = 1 GID
+			byte[] readTemp = new byte[4];
+			//see http://sourceforge.net/apps/mediawiki/tiled/index.php?title=Examining_the_map_format
+			for(int row = 0; row < map.layer.get(currentLayer).height; row++){
+				for(int col = 0; col < map.layer.get(currentLayer).width; col++){
+					try {
+						GZIS.read(readTemp, 0, 4);
+						map.layer.get(currentLayer).map[row][col] = readTemp[0] |  readTemp[1] << 8 | readTemp[2] << 16 | readTemp[3] << 24;
+						System.out.print(map.layer.get(currentLayer).map[row][col]);
+					} catch (IOException e) {
+						throw new GdxRuntimeException("Error Reading TMX Layer Data - IOException: " + e.getMessage());
+					}
+				}
+				System.out.println();
+			}
+		}
+	} 
+	
 	@Override
 	public void endDocument() {
 		System.out.println("End document");
@@ -190,43 +226,7 @@ public class TiledMapFactory extends DefaultHandler{
     {
     	switch(state){
     	case DATA:
-    		//TODO: instead of uncompressing here, do so in endElement.
-    		//All characters between data beginning and ending should be
-    		//concatenated, then trimmed immediately before uncompressing.
-    		//This will clean up code and allow for the entire map not coming in one
-    		//call to characters, better fitting the SAX spec.
-    		
-    		GZIPInputStream GZIS = null;
-    		dataString = String.copyValueOf(ch, start, length).trim();
-    		System.out.println("Data: \"" + dataString + "\"");
-    		
-    		if(dataString == null | "".equals(dataString)) break;
-    		
-    		//decode the data as Base64
-    		data = Base64Coder.decode(dataString);
-    		try {
-    			//Unzip the data
-				GZIS = new GZIPInputStream(new ByteArrayInputStream(data), data.length);
-			} catch (IOException e) {
-				throw new GdxRuntimeException("Error Reading TMX Layer Data - IOException: " + e.getMessage());
-				
-			} finally {
-				//Read the GZIS data into an array, 4 bytes = 1 GID
-				byte[] readTemp = new byte[4];
-				//see http://sourceforge.net/apps/mediawiki/tiled/index.php?title=Examining_the_map_format
-				for(int row = 0; row < map.layer.get(currentLayer).height; row++){
-					for(int col = 0; col < map.layer.get(currentLayer).width; col++){
-						try {
-							GZIS.read(readTemp, 0, 4);
-							map.layer.get(currentLayer).map[row][col] = readTemp[0] |  readTemp[1] << 8 | readTemp[2] << 16 | readTemp[3] << 24;
-							System.out.print(map.layer.get(currentLayer).map[row][col]);
-						} catch (IOException e) {
-							throw new GdxRuntimeException("Error Reading TMX Layer Data - IOException: " + e.getMessage());
-						}
-					}
-					System.out.println();
-				}
-			}
+    		dataString = dataString.concat(String.copyValueOf(ch, start, length));
     	break;
     	default:
     	break;
