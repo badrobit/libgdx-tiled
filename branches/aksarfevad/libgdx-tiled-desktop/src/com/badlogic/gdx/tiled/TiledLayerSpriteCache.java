@@ -16,6 +16,7 @@ package com.badlogic.gdx.tiled;
 import com.badlogic.gdx.graphics.SpriteCache;
 import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class TiledLayerSpriteCache {
 	private SpriteCache cache;
@@ -43,6 +44,9 @@ public class TiledLayerSpriteCache {
 		//TODO: add a constructor that takes a ShaderProgram for OpenGL ES 2
 		this.map = map;
 		this.atlas = atlas;
+		
+		if (!map.orientation.equals("orthogonal"))
+			throw new GdxRuntimeException("Only orthogonal maps supported!");
 		
 		blockHeightTiles = blockHeight;
 		blockWidthTiles = blockWidth;
