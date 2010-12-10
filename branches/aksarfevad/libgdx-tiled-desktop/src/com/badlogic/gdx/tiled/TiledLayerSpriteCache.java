@@ -13,59 +13,64 @@
 
 package com.badlogic.gdx.tiled;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.SpriteCache;
-import com.badlogic.gdx.graphics.TextureRegion;
+import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.math.Matrix4;
 
 public class TiledLayerSpriteCache {
 	private SpriteCache cache;
 	private int normalCacheId[][];//, blendedCacheId[][];
-	//will need 2 cache Ids for each area chunk (block), one for normal and one for blended
+	//TODO: will need 2 cache Ids for each area chunk (block), one for normal and one for blended
 	//Ideally, blocks should be just large enough so that at most 4 are visible at a time
 	
-	private TiledLayer layer;
-	private TileSet tileSet;
+	private TiledMap map;
+	private TileAtlas atlas;
 	
-	private int layerWidthPixels, layerHeightPixels;
-	private int layerHeightBlocks, layerWidthBlocks;
+	private int mapWidthPixels, mapHeightPixels;
+	private int mapHeightBlocks, mapWidthBlocks;
 	private int blockHeightTiles, blockWidthTiles;
+	
+	//TODO: add constructor that takes a ShaderProgram for OpenGL ES 2.0 support
 	
     /**
      * Draws a Tiled layer using a Sprite Cache
-     * @param layer The layer to be drawn
-     * @param tileSet The tile set used to draw this layer - note only one tile set per Tiled layer
+     * @param layers The layer to be drawn
+     * @param tileSets The tile set used to draw this layer - note only one tile set per Tiled layer
      * @param blockWidth The width of each block to be drawn, in number of tiles: should fill half the screen width
      * @param blockHeight The width of each block to be drawn, in number of tiles: should fill half the screen height
      */
-	public TiledLayerSpriteCache(TiledLayer layer, TileSet tileSet, int blockWidth, int blockHeight) {
+	public TiledLayerSpriteCache(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight) {
 		//TODO: add a constructor that takes a ShaderProgram for OpenGL ES 2
-		this.layer = layer;
-		this.tileSet = tileSet;
+		this.map = map;
+		this.atlas = atlas;
+		
 		blockHeightTiles = blockHeight;
 		blockWidthTiles = blockWidth;
 		
-		layerHeightPixels = layer.height * tileSet.tileHeight;
-		layerWidthPixels = layer.width * tileSet.tileWidth;
+		mapHeightPixels = map.height * map.tileHeight;
+		mapWidthPixels = map.width * map.tileWidth;
 		
-		layerWidthBlocks = (int) Math.ceil((float)layer.width/(float)blockWidth);
-		layerHeightBlocks = (int) Math.ceil((float)layer.height/(float)blockHeight);
+		mapWidthBlocks = (int) Math.ceil((float)map.width/(float)blockWidth);
+		mapHeightBlocks = (int) Math.ceil((float)map.height/(float)blockHeight);
 		
-		//blockRowMultiplier = layerHeightBlocks/(blockHeightTiles*tileSet.tileHeight);
+		normalCacheId = new int[mapHeightBlocks][mapWidthBlocks];
 		
-		normalCacheId = new int[layerHeightBlocks][layerWidthBlocks];
+		int maxCacheSize = 0;
+		for(int i = 0; i < map.layers.size(); i++){
+			maxCacheSize += map.layers.get(i).height * map.layers.get(i).width;
+		}
 		
-		cache = new SpriteCache(layer.height*layer.width, false);
-		
-		//FIXME: Don't really need a cache that holds all tiles,
+		cache = new SpriteCache(maxCacheSize, false);
+		//TODO: Don't really need a cache that holds all tiles,
 		//really only need room for all VISIBLE tiles.
 		//If using compiled TMX format, compute this during that phase
-		//otherwise, count the number of non-zero tiles
 		
-		for(int row = 0; row < layerHeightBlocks; row++){
-			for(int col = 0; col < layerWidthBlocks; col++){
+		for(int row = 0; row < mapHeightBlocks; row++){
+			for(int col = 0; col < mapWidthBlocks; col++){
 				normalCacheId[row][col] = addBlock(row, col);
 			}
 		}
@@ -75,53 +80,49 @@ public class TiledLayerSpriteCache {
 	private int addBlock(int blockRow, int blockCol){
 		int tile;
 		cache.beginCache();
-		float u, u2, v, v2;
 		
 		int tileRow = blockRow*blockHeightTiles;
 		int tileCol = blockCol*blockWidthTiles;
 		
-		float x = tileCol*tileSet.tileWidth;
-		float y = tileRow*tileSet.tileHeight;
+		float x = tileCol*map.tileWidth;
+		float y = tileRow*(map.tileHeight+1);
 		
-		for(int row = 0; row < blockHeightTiles && tileRow < layer.height; row++){
-			for(int col = 0; col < blockWidthTiles && tileCol < layer.width; col++){
-				tile = layer.map[layer.height - tileRow - 1][tileCol];
-				if(tile != 0){
-					TextureRegion region = tileSet.getRegion(tile);
-					u = (float)region.x/(float)tileSet.texture.getWidth();
-					u2 = (float)(region.x + region.width)/(float)tileSet.texture.getWidth();
-					v = (float)(region.y + region.height)/(float)tileSet.texture.getHeight();
-					v2 = (float)region.y/(float)tileSet.texture.getHeight();
-					cache.add(tileSet.texture, x, y, tileSet.tileWidth, tileSet.tileHeight, u, v, u2, v2, Color.WHITE.toFloatBits());
+		for(int row = 0; row < blockHeightTiles && tileRow < map.height; row++){
+			for(int col = 0; col < blockWidthTiles && tileCol < map.width; col++){
+				for(int i = 0; i < map.layers.size(); i++){
+					tile = map.layers.get(i).tile[map.layers.get(i).height - tileRow - 1][tileCol];
+					if(tile != 0){
+						AtlasRegion region = atlas.getRegion(tile);
+						cache.add(region, x, y);
+					}
 				}
-				x += tileSet.tileWidth;
+				x += map.tileWidth;
 				tileCol++;
 			}
-			y += tileSet.tileHeight;
+			y += map.tileHeight;
 			tileCol = blockCol*blockWidthTiles;
-			x = tileCol*tileSet.tileWidth;
+			x = tileCol*map.tileWidth;
 			tileRow++;
 		}
 		
 		return cache.endCache();
 	}
 	
-	//TODO: add render funtions that accept a shaderprogram for GLES 2 rendering
-	
 	//This function should not be used most of the time. Use render(int x, int y, int width, int height) instead.
 	public void render() {
-		render(0,0,layerWidthPixels,layerHeightPixels);	
+		render(0,0,mapWidthPixels,mapHeightPixels);	
 	}
 	
 	private int initialRow, initialCol, currentRow, currentCol, lastRow, lastCol;
 	
 	public void render(int x, int y, int width, int height) {
-		Gdx.gl.glEnable(GL10.GL_BLEND);
+		//Gdx.gl.glEnable(GL10.GL_BLEND);
 		
-		initialRow = Math.max(getBlockRow(y), 0);
+		initialRow = getBlockRow(y);
+		initialRow = (initialRow > 0) ? initialRow: 0;
 		initialCol = Math.max(getBlockCol(x), 0);
-		lastRow = Math.min(getBlockRow(y + height),layerHeightBlocks-1);
-		lastCol = Math.min(getBlockCol(x + width),layerWidthBlocks-1);
+		lastRow = Math.min(getBlockRow(y + height),mapHeightBlocks-1);
+		lastCol = Math.min(getBlockCol(x + width),mapWidthBlocks-1);
 		
 		cache.begin();
 		for(currentRow = initialRow; currentRow <= lastRow; currentRow++){
@@ -133,11 +134,11 @@ public class TiledLayerSpriteCache {
 	}
 	
 	private int getBlockRow(int y){
-		return y/(blockHeightTiles*tileSet.tileHeight);
+		return y/(blockHeightTiles*map.tileHeight);
 	}
 	
 	private int getBlockCol(int x){
-		return x/(blockWidthTiles*tileSet.tileWidth);
+		return x/(blockWidthTiles*map.tileWidth);
 	}
 	
 	public Matrix4 getProjectionMatrix(){
@@ -148,24 +149,24 @@ public class TiledLayerSpriteCache {
 		return cache.getTransformMatrix();
 	}
 	
-	public int getLayerHeightPixels() {
-		return layerHeightPixels;
+	public int getMapHeightPixels() {
+		return mapHeightPixels;
 	}
 
-	public int getLayerWidthPixels() {
-		return layerWidthPixels;
+	public int getMapWidthPixels() {
+		return mapWidthPixels;
 	}
 
 	int getRow(int worldY){
 		if(worldY < 0) return 0;
-		if(worldY > layerHeightPixels) return tileSet.tileHeight - 1;
-		return worldY/tileSet.tileHeight;
+		if(worldY > mapHeightPixels) return map.tileHeight - 1;
+		return worldY/map.tileHeight;
 	}
 	
 	int getCol(int worldX){
 		if(worldX < 0) return 0;
-		if(worldX > layerWidthPixels) return tileSet.tileWidth - 1;
-		return worldX/tileSet.tileWidth;
+		if(worldX > mapWidthPixels) return map.tileWidth - 1;
+		return worldX/map.tileWidth;
 	}
 	
 	void dispose() {

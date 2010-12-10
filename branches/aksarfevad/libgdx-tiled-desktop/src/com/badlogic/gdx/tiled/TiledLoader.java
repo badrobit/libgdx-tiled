@@ -26,13 +26,11 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Base64Coder;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
-public class TiledMapFactory extends DefaultHandler{
+public class TiledLoader extends DefaultHandler{
 	
 	private TiledMap map;
 	
@@ -51,21 +49,20 @@ public class TiledMapFactory extends DefaultHandler{
 	
 	//TODO: add object loading
 	
-	public TiledMapFactory(){
+	public TiledLoader(){
 	}
 	
-	public TiledMap createMap(String filename, String basePath, FileType type){
-		init();
+	public TiledMap createMap(FileHandle tmxFile, FileHandle baseDir){
+		state = LOADING;
+		currentLayer = 0;
+		currentTileSet = 0;
 		
-		map = new TiledMap(filename, type, basePath);
-		
-		System.out.println("Loading tilemap from " + filename);
-		FileHandle handle = Gdx.files.getFileHandle(filename, FileType.Internal);
+		map = new TiledMap(tmxFile, baseDir);
 		
 		SAXParser parser = null;
 		try {
 			parser = SAXParserFactory.newInstance().newSAXParser();
-			parser.parse(new InputSource(handle.read()), this);
+			parser.parse(new InputSource(tmxFile.read()), this);
 		} catch (ParserConfigurationException e) {
 			throw new GdxRuntimeException("Error Parsing TMX file - Parser Configuration Exception: " + e.getMessage());
 		} catch (SAXException e) {
@@ -75,12 +72,6 @@ public class TiledMapFactory extends DefaultHandler{
 		}
 		
 		return map;
-	}
-	
-	private void init() {
-		state = LOADING;
-		currentLayer = 0;
-		currentTileSet = 0;
 	}
 
 	static int parseIntWithDefault(String string, int defaultValue){
@@ -94,21 +85,17 @@ public class TiledMapFactory extends DefaultHandler{
 	
 	@Override
 	public void startDocument() {
-		System.out.println("Start document");
+
 	}
 	
 	@Override
 	public void startElement(String uri, String name, String qName, Attributes attr) {
-		System.out.println("Start element: " + qName);
-		
 		if("layer".equals(qName)){
 			String layerName = attr.getValue("name");
 			int layerWidth = parseIntWithDefault(attr.getValue("width"), 0);
 			int layerHeight = parseIntWithDefault(attr.getValue("height"), 0);
 			
-			
-			
-			map.layer.add(new TiledLayer(layerName, layerWidth, layerHeight));
+			map.layers.add(new TiledLayer(layerName, layerWidth, layerHeight));
 			return;
 		}
 		
@@ -130,18 +117,20 @@ public class TiledMapFactory extends DefaultHandler{
 		}
 		
 		if("image".equals(qName)){
-			map.addTileSet(attr.getValue("source"), tileWidth, tileHeight, firstgid, spacing, margin);
+			try {
+				map.addTileSet(attr.getValue("source"), tileWidth, tileHeight, firstgid, spacing, margin);
+			} catch (IOException e) {
+				throw new RuntimeException("Error Parsing TMX file: Image " + attr.getValue("source") + " could not be read");
+			}
 			return;
 		}
 		
 		if("map".equals(qName)){
-			if(!"orthogonal".equals(attr.getValue("orientation"))){ // orientation != orthogonal
-				throw new GdxRuntimeException("Only orthogonal maps are currently supported.");
-			}
-			map.mapWidth = parseIntWithDefault(attr.getValue("width"), 0);
-			map.mapHeight = parseIntWithDefault(attr.getValue("height"), 0);
-			map.mapTileWidth = parseIntWithDefault(attr.getValue("tilewidth"), 0);
-			map.mapTileHeight = parseIntWithDefault(attr.getValue("tileheight"), 0);
+			map.orientation = attr.getValue("orientation");
+			map.width = parseIntWithDefault(attr.getValue("width"), 0);
+			map.height = parseIntWithDefault(attr.getValue("height"), 0);
+			map.tileWidth = parseIntWithDefault(attr.getValue("tilewidth"), 0);
+			map.tileHeight = parseIntWithDefault(attr.getValue("tileheight"), 0);
 			return;
 		}
 	}
@@ -150,8 +139,6 @@ public class TiledMapFactory extends DefaultHandler{
 	//Currently this may cause strange results if the XML file is malformed
 	@Override
 	public void endElement(String uri, String name, String qName) {
-		System.out.println("End element: " + qName);
-				
 		if("data".equals(qName)){
     		if(dataString == null | "".equals(dataString)) return;
     		
@@ -174,13 +161,11 @@ public class TiledMapFactory extends DefaultHandler{
 		}
 		
 		if("layer".equals(qName)){
-			System.out.println("Added Layer: " + currentLayer);
 			currentLayer++;
 			return;
 		}
 		
 		if("tileset".equals(qName)){
-			System.out.println("Added TileSet");
 			currentTileSet++;
 			return;
 		}
@@ -200,24 +185,21 @@ public class TiledMapFactory extends DefaultHandler{
 			//Read the GZIS data into an array, 4 bytes = 1 GID
 			byte[] readTemp = new byte[4];
 			//see http://sourceforge.net/apps/mediawiki/tiled/index.php?title=Examining_the_map_format
-			for(int row = 0; row < map.layer.get(currentLayer).height; row++){
-				for(int col = 0; col < map.layer.get(currentLayer).width; col++){
+			for(int row = 0; row < map.layers.get(currentLayer).height; row++){
+				for(int col = 0; col < map.layers.get(currentLayer).width; col++){
 					try {
 						GZIS.read(readTemp, 0, 4);
-						map.layer.get(currentLayer).map[row][col] = readTemp[0] |  readTemp[1] << 8 | readTemp[2] << 16 | readTemp[3] << 24;
-						System.out.print(map.layer.get(currentLayer).map[row][col]);
+						map.layers.get(currentLayer).tile[row][col] = readTemp[0] |  readTemp[1] << 8 | readTemp[2] << 16 | readTemp[3] << 24;
 					} catch (IOException e) {
 						throw new GdxRuntimeException("Error Reading TMX Layer Data - IOException: " + e.getMessage());
 					}
 				}
-				System.out.println();
 			}
 		}
 	} 
 	
 	@Override
 	public void endDocument() {
-		System.out.println("End document");
 		state = DONE;
 	}
 	

@@ -13,30 +13,20 @@
 
 package com.dfraska.myrpg;
 
-import java.io.IOException;
 import java.util.ArrayList;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Files.FileType;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.BitmapFont;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.SpriteBatch;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
-import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.WindowedMean;
+import com.badlogic.gdx.tiled.TileAtlas;
 import com.badlogic.gdx.tiled.TiledLayerSpriteCache;
+import com.badlogic.gdx.tiled.TiledLoader;
 import com.badlogic.gdx.tiled.TiledMap;
-import com.badlogic.gdx.tiled.TiledMapFactory;
 
 public class MyRPG implements ApplicationListener {	
 	SpriteBatch spriteBatch;
@@ -46,9 +36,10 @@ public class MyRPG implements ApplicationListener {
 	Vector2 maxMapPosition = new Vector2(0,0);
 	Vector2 mapDirection = new Vector2(1,1);
 	
-	TiledMapFactory tmFactory;
-	ArrayList<TiledLayerSpriteCache> tmSpriteCache;
+	TiledLoader tLoader;
+	TiledLayerSpriteCache tmSpriteCache;
 	TiledMap map;
+	TileAtlas atlas;
 	
 	@Override public void dispose () {
 		
@@ -59,10 +50,8 @@ public class MyRPG implements ApplicationListener {
 		
 		updateMapPosition();
 		
-		for(i = 0; i < tmSpriteCache.size(); i++){
-			tmSpriteCache.get(i).getTransformMatrix().setToTranslation(-mapPosition.x, -mapPosition.y, 1f);
-			tmSpriteCache.get(i).render((int)mapPosition.x, (int)mapPosition.y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		}
+		tmSpriteCache.getTransformMatrix().setToTranslation(-mapPosition.x, -mapPosition.y, 1f);
+		tmSpriteCache.render((int)mapPosition.x, (int)mapPosition.y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		
 		spriteBatch.begin();
 			font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 20, 20);
@@ -93,13 +82,11 @@ public class MyRPG implements ApplicationListener {
 	@Override public void resize (int width, int height) {
 		int i;
 		spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
-		for(i=0; i < tmSpriteCache.size(); i++){
-			tmSpriteCache.get(i).getProjectionMatrix().setToOrtho2D(0, 0, width, height);
-		}
+		tmSpriteCache.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
 		
 		mapPosition.set(0,0);
-		float x = tmSpriteCache.get(0).getLayerWidthPixels() - Gdx.graphics.getWidth();
-		float y = tmSpriteCache.get(0).getLayerHeightPixels() - Gdx.graphics.getHeight();
+		float x = tmSpriteCache.getMapWidthPixels() - Gdx.graphics.getWidth();
+		float y = tmSpriteCache.getMapHeightPixels() - Gdx.graphics.getHeight();
 		maxMapPosition.set(x,y);
 	}
 
@@ -110,14 +97,19 @@ public class MyRPG implements ApplicationListener {
 		
 		spriteBatch = new SpriteBatch();
 		 
-		tmFactory = new TiledMapFactory();
+		tLoader = new TiledLoader();
 		
-		map = tmFactory.createMap("data/tilemap.tmx", "data/", FileType.Internal);
+		FileHandle mapHandle = Gdx.files.internal("data/tilemap.tmx");
+		FileHandle packfile = Gdx.files.internal("data/packfile");
+		FileHandle baseDir = Gdx.files.internal("data");
 		
-		tmSpriteCache = new ArrayList<TiledLayerSpriteCache>(map.layer.size());
-		for(i = 0; i < map.layer.size(); i++){
-			tmSpriteCache.add(new TiledLayerSpriteCache(map.layer.get(i), map.tileSet.get(i), (int)(Gdx.graphics.getWidth()/(4*map.tileSet.get(i).tileWidth)), (int)(Gdx.graphics.getHeight()/(4*map.tileSet.get(i).tileHeight))));
-		}
+		map = tLoader.createMap(mapHandle, baseDir);
+		atlas = new TileAtlas(map, packfile, baseDir);
+		
+		int blockWidth = (int)(Gdx.graphics.getWidth()/4);
+		int blockHeight = (int)(Gdx.graphics.getHeight()/4);
+		
+		tmSpriteCache = new TiledLayerSpriteCache(map, atlas, blockWidth, blockHeight);
 	}
 
 	@Override

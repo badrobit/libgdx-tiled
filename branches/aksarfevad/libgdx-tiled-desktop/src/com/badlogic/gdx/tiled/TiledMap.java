@@ -13,29 +13,28 @@
 
 package com.badlogic.gdx.tiled;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
-import com.badlogic.gdx.Files.FileType;
+import com.badlogic.gdx.files.FileHandle;
 
 public class TiledMap {
-	public ArrayList<TiledLayer> layer;
-	public ArrayList<TileSet> tileSet;
+	public ArrayList<TiledLayer> layers;
+	public ArrayList<TileSet> tileSets;
 	
-	public String filename;
-	public String basePath;
-	public FileType type;
-	public int mapWidth, mapHeight, mapTileWidth, mapTileHeight;
+	public final FileHandle tmxFile, baseDir;
+	public String orientation;
+	public int width, height, tileWidth, tileHeight;
 	
-	TiledMap(String filename, FileType type, String basePath){
-		this.filename = filename;
-		this.basePath = basePath;
-		this.type = type;
+	TiledMap(FileHandle tmxFile, FileHandle baseDir){
+		this.tmxFile = tmxFile;
+		this.baseDir = baseDir;
 		
-		layer = new ArrayList<TiledLayer>();
-		tileSet = new ArrayList<TileSet>();
+		layers = new ArrayList<TiledLayer>();
+		tileSets = new ArrayList<TileSet>();
 	}
 	
-	void addTileSet(String name, int firstgid, int tileWidth, int tileHeight, int spacing, int margin){
-		tileSet.add(new TileSet(basePath + name, type, firstgid, tileWidth, tileHeight, spacing, margin));
+	public void addTileSet(String imageName, int firstgid, int tileWidth, int tileHeight, int spacing, int margin) throws IOException{
+		tileSets.add(new TileSet(imageName, firstgid, tileWidth, tileHeight, spacing, margin));
 	}
 }

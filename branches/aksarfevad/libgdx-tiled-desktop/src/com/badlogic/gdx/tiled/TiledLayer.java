@@ -18,13 +18,17 @@ public class TiledLayer {
 	public final String name;
 
 	public final int width, height;
-	public final int[][] map;
+	
+	/**
+	 * Contains the location of all tiles on the layer, addressed as [row][column]. 
+	 */
+	public final int[][] tile;
 
 	TiledLayer(String name, int width, int height){
 		this.name = name;
 		this.width = width;
 		this.height = height;
-		map = new int[height][width];
+		tile = new int[height][width];
 	}
 	
 	@Override
