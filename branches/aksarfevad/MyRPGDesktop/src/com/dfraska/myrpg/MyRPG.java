@@ -85,9 +85,9 @@ public class MyRPG implements ApplicationListener {
 		tmSpriteCache.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
 		
 		mapPosition.set(0,0);
-		float x = tmSpriteCache.getMapWidthPixels() - Gdx.graphics.getWidth();
-		float y = tmSpriteCache.getMapHeightPixels() - Gdx.graphics.getHeight();
-		maxMapPosition.set(x,y);
+		float maxX = tmSpriteCache.getMapWidthPixels() - Gdx.graphics.getWidth();
+		float maxY = tmSpriteCache.getMapHeightPixels() - Gdx.graphics.getHeight();
+		maxMapPosition.set(maxX,maxY);
 	}
 
 	@Override public void create () {
@@ -106,8 +106,8 @@ public class MyRPG implements ApplicationListener {
 		map = tLoader.createMap(mapHandle, baseDir);
 		atlas = new TileAtlas(map, packfile, baseDir);
 		
-		int blockWidth = (int)(Gdx.graphics.getWidth()/4);
-		int blockHeight = (int)(Gdx.graphics.getHeight()/4);
+		int blockWidth = (int)(Gdx.graphics.getWidth()/8);
+		int blockHeight = (int)(Gdx.graphics.getHeight()/8);
 		
 		tmSpriteCache = new TiledLayerSpriteCache(map, atlas, blockWidth, blockHeight);
 	}

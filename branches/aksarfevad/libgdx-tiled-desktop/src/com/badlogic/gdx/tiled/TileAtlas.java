@@ -13,7 +13,6 @@ public class TileAtlas {
 	public TileAtlas(TiledMap map, FileHandle packFile, FileHandle imagesDir){
 		textureAtlas = new TextureAtlas(packFile, imagesDir, true);
 		atlasRegions = (List<AtlasRegion>) textureAtlas.getRegions(map.tmxFile.nameWithoutExtension());
-		
 	}
 
 	public AtlasRegion getRegion(int index){

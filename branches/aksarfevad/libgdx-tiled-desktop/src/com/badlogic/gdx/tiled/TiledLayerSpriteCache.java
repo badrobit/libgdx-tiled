@@ -13,10 +13,6 @@
 
 package com.badlogic.gdx.tiled;
 
-import java.util.ArrayList;
-
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.SpriteCache;
 import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.math.Matrix4;
@@ -40,8 +36,8 @@ public class TiledLayerSpriteCache {
      * Draws a Tiled layer using a Sprite Cache
      * @param layers The layer to be drawn
      * @param tileSets The tile set used to draw this layer - note only one tile set per Tiled layer
-     * @param blockWidth The width of each block to be drawn, in number of tiles: should fill half the screen width
-     * @param blockHeight The width of each block to be drawn, in number of tiles: should fill half the screen height
+     * @param blockWidth The width of each block to be drawn, in pixels
+     * @param blockHeight The width of each block to be drawn, in pixels
      */
 	public TiledLayerSpriteCache(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight) {
 		//TODO: add a constructor that takes a ShaderProgram for OpenGL ES 2
@@ -85,7 +81,7 @@ public class TiledLayerSpriteCache {
 		int tileCol = blockCol*blockWidthTiles;
 		
 		float x = tileCol*map.tileWidth;
-		float y = tileRow*(map.tileHeight+1);
+		float y = (tileRow+1)*map.tileHeight;
 		
 		for(int row = 0; row < blockHeightTiles && tileRow < map.height; row++){
 			for(int col = 0; col < blockWidthTiles && tileCol < map.width; col++){
