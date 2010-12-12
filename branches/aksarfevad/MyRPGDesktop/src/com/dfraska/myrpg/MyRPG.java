@@ -27,6 +27,8 @@ import com.badlogic.gdx.tiled.TileAtlas;
 import com.badlogic.gdx.tiled.TiledLayerSpriteCache;
 import com.badlogic.gdx.tiled.TiledLoader;
 import com.badlogic.gdx.tiled.TiledMap;
+import com.badlogic.gdx.tiled.TiledObject;
+import com.badlogic.gdx.tiled.TiledObjectGroup;
 
 public class MyRPG implements ApplicationListener {	
 	SpriteBatch spriteBatch;
@@ -110,6 +112,14 @@ public class MyRPG implements ApplicationListener {
 		int blockHeight = (int)(Gdx.graphics.getHeight()/8);
 		
 		tmSpriteCache = new TiledLayerSpriteCache(map, atlas, blockWidth, blockHeight);
+		
+		//Add sprites where objects occur
+		for(TiledObjectGroup group: map.objectGroups){
+			for(TiledObject object: group.objects){
+				//TODO: draw the objects
+				System.out.println("Object " + object.name + " at " + object.x + "," + object.y);
+			}
+		}
 	}
 
 	@Override

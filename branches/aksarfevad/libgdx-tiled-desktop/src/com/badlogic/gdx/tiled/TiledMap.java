@@ -13,28 +13,49 @@
 
 package com.badlogic.gdx.tiled;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.badlogic.gdx.files.FileHandle;
 
 public class TiledMap {
-	public ArrayList<TiledLayer> layers;
-	public ArrayList<TileSet> tileSets;
+	public ArrayList<TiledLayer> layers = new ArrayList<TiledLayer>();
+	public ArrayList<TiledObjectGroup> objectGroups = new ArrayList<TiledObjectGroup>();
+	public ArrayList<TileSet> tileSets = new ArrayList<TileSet>();
+	public HashMap<String,String> properties = new HashMap<String,String>();
+	private ArrayList<TileProperty> tileProperties = new ArrayList<TileProperty>();
 	
-	public final FileHandle tmxFile, baseDir;
+	public FileHandle tmxFile, baseDir;
 	public String orientation;
 	public int width, height, tileWidth, tileHeight;
 	
-	TiledMap(FileHandle tmxFile, FileHandle baseDir){
-		this.tmxFile = tmxFile;
-		this.baseDir = baseDir;
+	public void addTileProperty(int id, String name, String value){
+		for(TileProperty tp: tileProperties){
+			if(tp.id == id){
+				tp.propertyMap.put(name, value);
+				return;
+			}
+		}
 		
-		layers = new ArrayList<TiledLayer>();
-		tileSets = new ArrayList<TileSet>();
+		//no TileProperty found with the correct id, add a new one
+		TileProperty tempProperty = new TileProperty();
+		tempProperty.id = id;
+		tempProperty.propertyMap.put(name, value);
+		tileProperties.add(tempProperty);
 	}
 	
-	public void addTileSet(String imageName, int firstgid, int tileWidth, int tileHeight, int spacing, int margin) throws IOException{
-		tileSets.add(new TileSet(imageName, firstgid, tileWidth, tileHeight, spacing, margin));
+	public String getTileProperty(int id, String name){
+		for(TileProperty tp: tileProperties){
+			if(tp.id == id){
+				return tp.propertyMap.get(name);
+			}
+		}
+		
+		return null;
+	}
+	
+	private class TileProperty{
+		int id;
+		HashMap<String,String> propertyMap = new HashMap<String,String>();
 	}
 }

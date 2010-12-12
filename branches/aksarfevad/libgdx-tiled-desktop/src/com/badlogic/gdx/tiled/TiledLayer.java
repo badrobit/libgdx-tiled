@@ -13,11 +13,13 @@
 
 package com.badlogic.gdx.tiled;
 
+import java.util.HashMap;
+
 //holds map layer information
 public class TiledLayer {
 	public final String name;
-
 	public final int width, height;
+	public HashMap<String,String> properties = new HashMap<String,String>();
 	
 	/**
 	 * Contains the location of all tiles on the layer, addressed as [row][column]. 

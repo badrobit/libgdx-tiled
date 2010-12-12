@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" width="50" height="30" tilewidth="32" tileheight="32">
+ <properties>
+  <property name="map property" value="map value"/>
+ </properties>
  <tileset firstgid="1" name="tileset" tilewidth="32" tileheight="32">
   <image source="tileset.png"/>
  </tileset>
  <tileset firstgid="5" name="tileset_2" tilewidth="32" tileheight="32">
   <image source="tileset_2.png"/>
+  <tile id="0">
+   <properties>
+    <property name="tile property" value="tile value"/>
+   </properties>
+  </tile>
  </tileset>
  <tileset firstgid="9" name="tileset_3" tilewidth="32" tileheight="32">
   <image source="tileset_3.png"/>
@@ -13,6 +21,9 @@
   <image source="tileset_4.png"/>
  </tileset>
  <layer name="First Layer" width="50" height="30">
+  <properties>
+   <property name="Layer Property" value="Layer Value"/>
+  </properties>
   <data encoding="base64" compression="gzip">
    H4sIAAAAAAAAC+2TUQ7AIAhD1fsfevsmgpIMVkg/SI0hSHmyxhjzjVVc5TkjIrx08LDjIX1Jz0upMTd5NzWjeJzetHK1mVh3f/D4wgd5+Hlou3D6913344ZRhf3oxiPag5eHtTMevxk8oiOLR1UvUfPJVoQeyIM8UBWhB/IgD1RF6IE8yANVEXogj348HkfuS4NwFwAA
   </data>
@@ -33,8 +44,15 @@
   </data>
  </layer>
  <objectgroup name="Object_Layer" width="50" height="30">
-  <object name="Touching_H space in name" type="mytype1" x="186" y="187" width="154" height="131"/>
-  <object name="Touching_P" type="mytype2" x="599" y="159" width="82" height="68"/>
+  <properties>
+   <property name="Objectgroup property" value="Objectgroup value"/>
+  </properties>
+  <object name="Touching_H" type="mytype1" x="186" y="187" width="154" height="131"/>
+  <object name="Touching_P" type="mytype2" x="599" y="159" width="82" height="68">
+   <properties>
+    <property name="object property" value="object value"/>
+   </properties>
+  </object>
   <object name="Touching_L" x="579" y="352"/>
   <object name="Touching_!" x="814" y="207"/>
   <object name="Upper_Left" x="0" y="0"/>

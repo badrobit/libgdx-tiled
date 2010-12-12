@@ -75,7 +75,7 @@ public class TiledMapPacker {
 			g = tile.createGraphics();
 			g.drawImage(packerTileSet.image, 0, 0, packerTileSet.tileSet.tileWidth, packerTileSet.tileSet.tileHeight, (int)tileLocation.x, (int)tileLocation.y, (int)tileLocation.x + packerTileSet.tileSet.tileWidth, (int)tileLocation.y + packerTileSet.tileSet.tileHeight, null);
 			
-			packer.addImage(tile, map.tmxFile.nameWithoutExtension() + tilesOnMap.get(i));//.insertImage(String.valueOf(tilesOnLayer.get(i)), tile);
+			packer.addImage(tile, map.tmxFile.nameWithoutExtension() + "_" + tilesOnMap.get(i));
 		}
 		
 		packer.process(outputDir, new File(outputDir, "packfile"), tmxFileHandle.nameWithoutExtension());
@@ -137,8 +137,14 @@ public class TiledMapPacker {
 		baseDir = new File(args[1]);
 		outputDir = new File(args[2]);
 		
-		if(!baseDir.exists()) System.out.println("Base Directory invalid");
-		if(!tmxFile.exists()) System.out.println("TMX File invalid");
+		if(!baseDir.exists()){
+			System.out.println("Base directory does not exist");
+			return;
+		}
+		if(!tmxFile.exists()){
+			System.out.println("TMX file does not exist");
+			return;
+		}
 		
 		try {
 			packer.processMap(tmxFile, baseDir, outputDir, settings);

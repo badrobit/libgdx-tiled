@@ -15,6 +15,7 @@ package com.badlogic.gdx.tiled;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.zip.GZIPInputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -35,29 +36,32 @@ public class TiledLoader extends DefaultHandler{
 	private TiledMap map;
 	
 	private int state;
-	private int currentLayer;
-	private int currentTileSet;
+	private TiledLayer currentLayer;
+	private TileSet currentTileSet;
+	private TiledObjectGroup currentObjectGroup;
+	private TiledObject currentObject;
+	private int currentTile;
 	
 	//define states
-	private static final int LOADING = 0;
+	private static final int INIT = 0;
 	private static final int DATA = 1;
 	private static final int DONE = 2;
+	
+	LinkedList<String> currentBranch = new LinkedList<String>();
 	
 	private int firstgid, tileWidth, tileHeight, margin, spacing;
 	private String dataString, encoding, compression;
 	private byte[] data;
 	
-	//TODO: add object loading
-	
 	public TiledLoader(){
 	}
 	
 	public TiledMap createMap(FileHandle tmxFile, FileHandle baseDir){
-		state = LOADING;
-		currentLayer = 0;
-		currentTileSet = 0;
+		state = INIT;
 		
-		map = new TiledMap(tmxFile, baseDir);
+		map = new TiledMap();
+		map.tmxFile = tmxFile;
+		map.baseDir = baseDir;
 		
 		SAXParser parser = null;
 		try {
@@ -90,12 +94,14 @@ public class TiledLoader extends DefaultHandler{
 	
 	@Override
 	public void startElement(String uri, String name, String qName, Attributes attr) {
+		currentBranch.push(qName);
+		
 		if("layer".equals(qName)){
 			String layerName = attr.getValue("name");
 			int layerWidth = parseIntWithDefault(attr.getValue("width"), 0);
 			int layerHeight = parseIntWithDefault(attr.getValue("height"), 0);
 			
-			map.layers.add(new TiledLayer(layerName, layerWidth, layerHeight));
+			currentLayer = new TiledLayer(layerName, layerWidth, layerHeight);
 			return;
 		}
 		
@@ -116,9 +122,28 @@ public class TiledLoader extends DefaultHandler{
 			return;
 		}
 		
+		if("objectgroup".equals(qName)){
+			currentObjectGroup = new TiledObjectGroup();
+			currentObjectGroup.name = attr.getValue("name");
+			currentObjectGroup.height = parseIntWithDefault(attr.getValue("height"), 0);
+			currentObjectGroup.width = parseIntWithDefault(attr.getValue("width"), 0);
+			return;
+		}
+		
+		if("object".equals(qName)){
+			currentObject = new TiledObject();
+			currentObject.name = attr.getValue("name");
+			currentObject.type = attr.getValue("type");
+			currentObject.x = parseIntWithDefault(attr.getValue("x"), 0);
+			currentObject.y = parseIntWithDefault(attr.getValue("y"), 0);
+			currentObject.width = parseIntWithDefault(attr.getValue("width"), 0);
+			currentObject.height = parseIntWithDefault(attr.getValue("height"), 0);
+			return;
+		}
+		
 		if("image".equals(qName)){
 			try {
-				map.addTileSet(attr.getValue("source"), tileWidth, tileHeight, firstgid, spacing, margin);
+				currentTileSet = new TileSet(attr.getValue("source"), tileWidth, tileHeight, firstgid, spacing, margin);
 			} catch (IOException e) {
 				throw new RuntimeException("Error Parsing TMX file: Image " + attr.getValue("source") + " could not be read");
 			}
@@ -133,12 +158,60 @@ public class TiledLoader extends DefaultHandler{
 			map.tileHeight = parseIntWithDefault(attr.getValue("tileheight"), 0);
 			return;
 		}
+		
+		if("tile".equals(qName)){
+			currentTile = parseIntWithDefault(attr.getValue("id"), 0);
+			return;
+		}
+		
+		if("property".equals(qName)){
+			String parentType = currentBranch.get(2);
+			putProperty(parentType, attr.getValue("name"), attr.getValue("value"));
+			return;
+		}
+		
+		if("properties".equals(qName)){
+			return;
+		}
+		
+		System.out.println("Start element for " + qName + " unhandled");
 	}
 	
-	//TODO: no checking is done to make sure that an element has actually started.
+	private void putProperty(String parentType, String name, String value){
+		if("tile".equals(parentType)){
+			map.addTileProperty(currentTile, name, value);
+			return;
+		}
+		
+		if("map".equals(parentType)){
+			map.properties.put(name, value);
+			return;
+		}
+		
+		if("layer".equals(parentType)){
+			currentLayer.properties.put(name, value);
+			return;
+		}
+		
+		if("objectgroup".equals(parentType)){
+			currentObjectGroup.properties.put(name, value);
+			return;
+		}
+		
+		if("object".equals(parentType)){
+			currentObject.properties.put(name, value);
+			return;
+		}
+		
+		System.out.println("Property for " + parentType + " unhandled");
+	}
+	
+	//FIXME: no checking is done to make sure that an element has actually started.
 	//Currently this may cause strange results if the XML file is malformed
 	@Override
 	public void endElement(String uri, String name, String qName) {
+		currentBranch.pop();
+		
 		if("data".equals(qName)){
     		if(dataString == null | "".equals(dataString)) return;
     		
@@ -156,23 +229,55 @@ public class TiledLoader extends DefaultHandler{
 				throw new GdxRuntimeException("Unsupported compression, only gzip supported");
 			}
 			
-			state = LOADING;
+			state = INIT;
 			return;
 		}
 		
 		if("layer".equals(qName)){
-			currentLayer++;
+			map.layers.add(currentLayer);
+			currentLayer = null;
 			return;
 		}
 		
 		if("tileset".equals(qName)){
-			currentTileSet++;
+			map.tileSets.add(currentTileSet);
+			currentTileSet = null;
+			return;
+		}
+		
+		if("objectgroup".equals(qName)){
+			map.objectGroups.add(currentObjectGroup);
+			currentObjectGroup = null;
+			return;
+		}
+		
+		if("object".equals(qName)){
+			currentObjectGroup.addObject(currentObject);
+			currentObject = null;
 			return;
 		}
 		
 		if("image".equals(qName)){
 			return;
 		}
+		
+		if("map".equals(qName)){
+			return;
+		}
+		
+		if("tile".equals(qName)){
+			return;
+		}
+		
+		if("property".equals(qName)){
+			return;
+		}
+		
+		if("properties".equals(qName)){
+			return;
+		}
+		
+		System.out.println("End element for " + qName + " unhandled");
 	}
 	
 	private void unGZip(){
@@ -185,11 +290,11 @@ public class TiledLoader extends DefaultHandler{
 			//Read the GZIS data into an array, 4 bytes = 1 GID
 			byte[] readTemp = new byte[4];
 			//see http://sourceforge.net/apps/mediawiki/tiled/index.php?title=Examining_the_map_format
-			for(int row = 0; row < map.layers.get(currentLayer).height; row++){
-				for(int col = 0; col < map.layers.get(currentLayer).width; col++){
+			for(int row = 0; row < currentLayer.height; row++){
+				for(int col = 0; col < currentLayer.width; col++){
 					try {
 						GZIS.read(readTemp, 0, 4);
-						map.layers.get(currentLayer).tile[row][col] = readTemp[0] |  readTemp[1] << 8 | readTemp[2] << 16 | readTemp[3] << 24;
+						currentLayer.tile[row][col] = readTemp[0] |  readTemp[1] << 8 | readTemp[2] << 16 | readTemp[3] << 24;
 					} catch (IOException e) {
 						throw new GdxRuntimeException("Error Reading TMX Layer Data - IOException: " + e.getMessage());
 					}
