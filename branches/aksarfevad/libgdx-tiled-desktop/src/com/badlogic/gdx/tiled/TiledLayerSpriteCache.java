@@ -15,6 +15,7 @@ package com.badlogic.gdx.tiled;
 
 import com.badlogic.gdx.graphics.SpriteCache;
 import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
@@ -41,6 +42,18 @@ public class TiledLayerSpriteCache {
      * @param blockHeight The width of each block to be drawn, in pixels
      */
 	public TiledLayerSpriteCache(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight) {
+		this(map, atlas, blockWidth, blockHeight, null);
+	}
+	
+    /**
+     * Draws a Tiled layer using a Sprite Cache
+     * @param layers The layer to be drawn
+     * @param tileSets The tile set used to draw this layer - note only one tile set per Tiled layer
+     * @param blockWidth The width of each block to be drawn, in pixels
+     * @param blockHeight The width of each block to be drawn, in pixels
+     * @param shader Shader to use for OpenGL ES 2.0
+     */
+	public TiledLayerSpriteCache(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight, ShaderProgram shader) {
 		//TODO: add a constructor that takes a ShaderProgram for OpenGL ES 2
 		this.map = map;
 		this.atlas = atlas;
@@ -64,7 +77,10 @@ public class TiledLayerSpriteCache {
 			maxCacheSize += map.layers.get(i).height * map.layers.get(i).width;
 		}
 		
-		cache = new SpriteCache(maxCacheSize, false);
+		if(shader == null)
+			cache = new SpriteCache(maxCacheSize, shader, false);
+		else
+			cache = new SpriteCache(maxCacheSize, false);
 		//TODO: Don't really need a cache that holds all tiles,
 		//really only need room for all VISIBLE tiles.
 		//If using compiled TMX format, compute this during that phase
