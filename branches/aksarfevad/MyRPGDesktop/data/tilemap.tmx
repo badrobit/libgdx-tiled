@@ -8,17 +8,42 @@
  </tileset>
  <tileset firstgid="5" name="tileset_2" tilewidth="32" tileheight="32">
   <image source="tileset_2.png"/>
-  <tile id="0">
+  <tile id="2">
    <properties>
-    <property name="tile property" value="tile value"/>
+    <property name="blended" value="true"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="blended" value="true"/>
    </properties>
   </tile>
  </tileset>
  <tileset firstgid="9" name="tileset_3" tilewidth="32" tileheight="32">
   <image source="tileset_3.png"/>
+  <tile id="2">
+   <properties>
+    <property name="blended" value="true"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="blended" value="true"/>
+   </properties>
+  </tile>
  </tileset>
  <tileset firstgid="13" name="tileset_4" tilewidth="32" tileheight="32">
   <image source="tileset_4.png"/>
+  <tile id="2">
+   <properties>
+    <property name="blended" value="true"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="blended" value="true"/>
+   </properties>
+  </tile>
  </tileset>
  <layer name="First Layer" width="50" height="30">
   <properties>
@@ -47,7 +72,7 @@
   <properties>
    <property name="Objectgroup property" value="Objectgroup value"/>
   </properties>
-  <object name="Touching_H" type="mytype1" x="186" y="187" width="154" height="131"/>
+  <object name="Touching_H space in name" type="mytype1" x="186" y="187" width="154" height="131"/>
   <object name="Touching_P" type="mytype2" x="599" y="159" width="82" height="68">
    <properties>
     <property name="object property" value="object value"/>

@@ -13,6 +13,8 @@
 
 package com.badlogic.gdx.tiled;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.SpriteCache;
 import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -21,9 +23,8 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class TiledLayerSpriteCache {
 	private SpriteCache cache;
-	private int normalCacheId[][];//, blendedCacheId[][];
+	private int normalCacheId[][], blendedCacheId[][];
 	//TODO: will need 2 cache Ids for each area chunk (block), one for normal and one for blended
-	//Ideally, blocks should be just large enough so that at most 4 are visible at a time
 	
 	private TiledMap map;
 	private TileAtlas atlas;
@@ -31,8 +32,6 @@ public class TiledLayerSpriteCache {
 	private int mapWidthPixels, mapHeightPixels;
 	private int mapHeightBlocks, mapWidthBlocks;
 	private int blockHeightTiles, blockWidthTiles;
-	
-	//TODO: add constructor that takes a ShaderProgram for OpenGL ES 2.0 support
 	
     /**
      * Draws a Tiled layer using a Sprite Cache
@@ -54,7 +53,6 @@ public class TiledLayerSpriteCache {
      * @param shader Shader to use for OpenGL ES 2.0
      */
 	public TiledLayerSpriteCache(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight, ShaderProgram shader) {
-		//TODO: add a constructor that takes a ShaderProgram for OpenGL ES 2
 		this.map = map;
 		this.atlas = atlas;
 		
@@ -71,6 +69,7 @@ public class TiledLayerSpriteCache {
 		mapHeightBlocks = (int) Math.ceil((float)map.height/(float)blockHeight);
 		
 		normalCacheId = new int[mapHeightBlocks][mapWidthBlocks];
+		blendedCacheId = new int[mapHeightBlocks][mapWidthBlocks];
 		
 		int maxCacheSize = 0;
 		for(int i = 0; i < map.layers.size(); i++){
@@ -87,14 +86,15 @@ public class TiledLayerSpriteCache {
 		
 		for(int row = 0; row < mapHeightBlocks; row++){
 			for(int col = 0; col < mapWidthBlocks; col++){
-				normalCacheId[row][col] = addBlock(row, col);
+				normalCacheId[row][col] = addBlock(row, col, false);
+				blendedCacheId[row][col] = addBlock(row, col, true);
 			}
 		}
-		
 	}
 	
-	private int addBlock(int blockRow, int blockCol){
+	private int addBlock(int blockRow, int blockCol, boolean blended){
 		int tile;
+		AtlasRegion region;
 		cache.beginCache();
 		
 		int tileRow = blockRow*blockHeightTiles;
@@ -108,8 +108,10 @@ public class TiledLayerSpriteCache {
 				for(int i = 0; i < map.layers.size(); i++){
 					tile = map.layers.get(i).tile[map.layers.get(i).height - tileRow - 1][tileCol];
 					if(tile != 0){
-						AtlasRegion region = atlas.getRegion(tile);
-						cache.add(region, x, y);
+						if(blended == "true".equals(map.getTileProperty(tile, "blended"))){
+							region = atlas.getRegion(tile);
+							cache.add(region, x, y);
+						}
 					}
 				}
 				x += map.tileWidth;
@@ -132,8 +134,6 @@ public class TiledLayerSpriteCache {
 	private int initialRow, initialCol, currentRow, currentCol, lastRow, lastCol;
 	
 	public void render(int x, int y, int width, int height) {
-		//Gdx.gl.glEnable(GL10.GL_BLEND);
-		
 		initialRow = getBlockRow(y);
 		initialRow = (initialRow > 0) ? initialRow: 0;
 		initialCol = Math.max(getBlockCol(x), 0);
@@ -143,10 +143,14 @@ public class TiledLayerSpriteCache {
 		cache.begin();
 		for(currentRow = initialRow; currentRow <= lastRow; currentRow++){
 			for(currentCol = initialCol; currentCol <= lastCol; currentCol++){
+				Gdx.gl.glDisable(GL10.GL_BLEND);
 				cache.draw(normalCacheId[currentRow][currentCol]);
+				Gdx.gl.glEnable(GL10.GL_BLEND);
+				cache.draw(blendedCacheId[currentRow][currentCol]);
 			}
 		}
 		cache.end();
+		Gdx.gl.glDisable(GL10.GL_BLEND);
 	}
 	
 	private int getBlockRow(int y){

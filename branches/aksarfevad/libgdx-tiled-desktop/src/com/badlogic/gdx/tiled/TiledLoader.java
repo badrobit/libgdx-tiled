@@ -15,7 +15,7 @@ package com.badlogic.gdx.tiled;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.Stack;
 import java.util.zip.GZIPInputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -47,7 +47,7 @@ public class TiledLoader extends DefaultHandler{
 	private static final int DATA = 1;
 	private static final int DONE = 2;
 	
-	LinkedList<String> currentBranch = new LinkedList<String>();
+	Stack<String> currentBranch = new Stack<String>();
 	
 	private int firstgid, tileWidth, tileHeight, margin, spacing;
 	private String dataString, encoding, compression;
@@ -165,7 +165,7 @@ public class TiledLoader extends DefaultHandler{
 		}
 		
 		if("property".equals(qName)){
-			String parentType = currentBranch.get(2);
+			String parentType = currentBranch.get(currentBranch.size()-3);
 			putProperty(parentType, attr.getValue("name"), attr.getValue("value"));
 			return;
 		}
@@ -179,7 +179,7 @@ public class TiledLoader extends DefaultHandler{
 	
 	private void putProperty(String parentType, String name, String value){
 		if("tile".equals(parentType)){
-			map.addTileProperty(currentTile, name, value);
+			map.addTileProperty(currentTile + currentTileSet.firstgid, name, value);
 			return;
 		}
 		
