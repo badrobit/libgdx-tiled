@@ -77,9 +77,9 @@ public class TiledLayerSpriteCache {
 		}
 		
 		if(shader == null)
-			cache = new SpriteCache(maxCacheSize, shader, false);
-		else
 			cache = new SpriteCache(maxCacheSize, false);
+		else
+			cache = new SpriteCache(maxCacheSize, shader, false);
 		//TODO: Don't really need a cache that holds all tiles,
 		//really only need room for all VISIBLE tiles.
 		//If using compiled TMX format, compute this during that phase
@@ -151,6 +151,7 @@ public class TiledLayerSpriteCache {
 		}
 		cache.end();
 		Gdx.gl.glDisable(GL10.GL_BLEND);
+		
 	}
 	
 	private int getBlockRow(int y){

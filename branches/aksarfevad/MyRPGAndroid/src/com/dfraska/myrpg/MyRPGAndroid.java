@@ -21,6 +21,6 @@ import com.dfraska.myrpg.MyRPG;
 public class MyRPGAndroid extends AndroidApplication {
 	@Override public void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		initialize(new MyRPG(), false);		
+		initialize(new MyRPG(), true);		
 	}
 }

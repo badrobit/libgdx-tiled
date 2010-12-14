@@ -75,7 +75,7 @@ public class TiledMapPacker {
 			g = tile.createGraphics();
 			g.drawImage(packerTileSet.image, 0, 0, packerTileSet.tileSet.tileWidth, packerTileSet.tileSet.tileHeight, (int)tileLocation.x, (int)tileLocation.y, (int)tileLocation.x + packerTileSet.tileSet.tileWidth, (int)tileLocation.y + packerTileSet.tileSet.tileHeight, null);
 			
-			packer.addImage(tile, map.tmxFile.nameWithoutExtension() + "_" + tilesOnMap.get(i));
+			packer.addImage(tile, map.tmxFile.nameWithoutExtension() + "_" + tilesOnMap.get(i) + "_xy");
 		}
 		
 		packer.process(outputDir, new File(outputDir, "packfile"), tmxFileHandle.nameWithoutExtension());
