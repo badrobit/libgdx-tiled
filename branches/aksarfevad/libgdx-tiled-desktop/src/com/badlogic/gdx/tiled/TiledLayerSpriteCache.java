@@ -13,6 +13,9 @@
 
 package com.badlogic.gdx.tiled;
 
+import java.util.ArrayList;
+import java.util.StringTokenizer;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.SpriteCache;
@@ -32,6 +35,8 @@ public class TiledLayerSpriteCache {
 	private int mapWidthPixels, mapHeightPixels;
 	private int mapHeightBlocks, mapWidthBlocks;
 	private int blockHeightTiles, blockWidthTiles;
+	
+	private ArrayList<Integer> blendedTiles;
 	
     /**
      * Draws a Tiled layer using a Sprite Cache
@@ -71,6 +76,11 @@ public class TiledLayerSpriteCache {
 		normalCacheId = new int[mapHeightBlocks][mapWidthBlocks];
 		blendedCacheId = new int[mapHeightBlocks][mapWidthBlocks];
 		
+		String blendedTilesString = map.properties.get("blended tiles");
+		if(blendedTilesString != null){
+			blendedTiles = createFromCSV(blendedTilesString);
+		}
+		
 		int maxCacheSize = 0;
 		for(int i = 0; i < map.layers.size(); i++){
 			maxCacheSize += map.layers.get(i).height * map.layers.get(i).width;
@@ -82,7 +92,7 @@ public class TiledLayerSpriteCache {
 			cache = new SpriteCache(maxCacheSize, shader, false);
 		//TODO: Don't really need a cache that holds all tiles,
 		//really only need room for all VISIBLE tiles.
-		//If using compiled TMX format, compute this during that phase
+		//Should compute this during compiling
 		
 		for(int row = 0; row < mapHeightBlocks; row++){
 			for(int col = 0; col < mapWidthBlocks; col++){
@@ -92,6 +102,16 @@ public class TiledLayerSpriteCache {
 		}
 	}
 	
+	private ArrayList<Integer> createFromCSV(String values) {
+		ArrayList<Integer> list = new ArrayList<Integer>();
+		StringTokenizer st = new StringTokenizer(values,",");
+		while (st.hasMoreTokens())
+		{
+			list.add(Integer.valueOf(st.nextToken()));
+		}
+		return list;
+	}
+
 	private int addBlock(int blockRow, int blockCol, boolean blended){
 		int tile;
 		AtlasRegion region;
@@ -108,7 +128,7 @@ public class TiledLayerSpriteCache {
 				for(int i = 0; i < map.layers.size(); i++){
 					tile = map.layers.get(i).tile[map.layers.get(i).height - tileRow - 1][tileCol];
 					if(tile != 0){
-						if(blended == "true".equals(map.getTileProperty(tile, "blended"))){
+						if(blended == blendedTiles.contains(tile)){
 							region = atlas.getRegion(tile);
 							cache.add(region, x, y);
 						}

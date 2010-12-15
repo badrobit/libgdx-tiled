@@ -29,7 +29,7 @@ public class TiledMap {
 	public String orientation;
 	public int width, height, tileWidth, tileHeight;
 	
-	public void addTileProperty(int id, String name, String value){
+	public void setTileProperty(int id, String name, String value){
 		for(TileProperty tp: tileProperties){
 			if(tp.id == id){
 				tp.propertyMap.put(name, value);

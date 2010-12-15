@@ -12,49 +12,49 @@ tilemap
   index: 15
 tilemap
   rotate: false
-  xy: 33, 0
+  xy: 0, 34
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 16
 tilemap
   rotate: false
-  xy: 66, 0
+  xy: 0, 68
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 11
 tilemap
   rotate: false
-  xy: 99, 0
+  xy: 0, 102
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 12
 tilemap
   rotate: false
-  xy: 132, 0
+  xy: 0, 136
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 8
 tilemap
   rotate: false
-  xy: 165, 0
+  xy: 0, 170
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 7
 tilemap
   rotate: false
-  xy: 198, 0
+  xy: 0, 204
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: 1
 tilemap
   rotate: false
-  xy: 231, 0
+  xy: 0, 238
   size: 32, 32
   orig: 32, 32
   offset: 0, 0

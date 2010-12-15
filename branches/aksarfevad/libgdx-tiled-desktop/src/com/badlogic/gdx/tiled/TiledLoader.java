@@ -179,7 +179,7 @@ public class TiledLoader extends DefaultHandler{
 	
 	private void putProperty(String parentType, String name, String value){
 		if("tile".equals(parentType)){
-			map.addTileProperty(currentTile + currentTileSet.firstgid, name, value);
+			map.setTileProperty(currentTile + currentTileSet.firstgid, name, value);
 			return;
 		}
 		
