@@ -50,12 +50,15 @@ public class MyRPG implements ApplicationListener {
 	@Override public void render () {
 		int i;
 		
-		updateMapPosition();
+		//updateMapPosition();
 		
 		tmSpriteCache.getTransformMatrix().setToTranslation(-mapPosition.x, -mapPosition.y, 1f);
 		tmSpriteCache.render((int)mapPosition.x, (int)mapPosition.y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		
 		spriteBatch.begin();
+			font.draw(spriteBatch, "maxMapPositionY: " + maxMapPosition.y, 20, 40);
+			font.draw(spriteBatch, "Display Width: " + Gdx.graphics.getWidth(), 20, 60);
+			font.draw(spriteBatch, "Display Height: " + Gdx.graphics.getHeight(), 20, 80);
 			font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 20, 20);
 		spriteBatch.end();
 	}
@@ -87,8 +90,8 @@ public class MyRPG implements ApplicationListener {
 		tmSpriteCache.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
 		
 		mapPosition.set(0,0);
-		float maxX = tmSpriteCache.getMapWidthPixels() - Gdx.graphics.getWidth();
-		float maxY = tmSpriteCache.getMapHeightPixels() - Gdx.graphics.getHeight();
+		float maxX = tmSpriteCache.getMapWidthPixels() - width;
+		float maxY = tmSpriteCache.getMapHeightPixels() - height;
 		maxMapPosition.set(maxX,maxY);
 	}
 
@@ -108,8 +111,8 @@ public class MyRPG implements ApplicationListener {
 		map = tLoader.createMap(mapHandle, baseDir);
 		atlas = new TileAtlas(map, packfile, baseDir);
 		
-		int blockWidth = (int)(Gdx.graphics.getWidth()/8);
-		int blockHeight = (int)(Gdx.graphics.getHeight()/8);
+		int blockWidth = (int)(Gdx.graphics.getWidth()/2);
+		int blockHeight = (int)(Gdx.graphics.getHeight()/2);
 		
 		tmSpriteCache = new TiledLayerSpriteCache(map, atlas, blockWidth, blockHeight);
 		
@@ -117,7 +120,8 @@ public class MyRPG implements ApplicationListener {
 		for(TiledObjectGroup group: map.objectGroups){
 			for(TiledObject object: group.objects){
 				//TODO: draw the objects
-				System.out.println("Object " + object.name + " at " + object.x + "," + object.y);
+				System.out.println("Object " + object.name + " x,y = " + object.x + "," + object.y
+						+ " width,height = " + object.width + "," + object.height);
 			}
 		}
 	}

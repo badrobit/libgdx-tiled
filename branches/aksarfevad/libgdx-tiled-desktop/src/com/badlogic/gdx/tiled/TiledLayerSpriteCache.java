@@ -23,6 +23,7 @@ import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.MathUtils;
 
 public class TiledLayerSpriteCache {
 	private SpriteCache cache;
@@ -32,9 +33,9 @@ public class TiledLayerSpriteCache {
 	private TiledMap map;
 	private TileAtlas atlas;
 	
-	private int mapWidthPixels, mapHeightPixels;
-	private int mapHeightBlocks, mapWidthBlocks;
-	private int blockHeightTiles, blockWidthTiles;
+	private int pixelsPerMapX, pixelsPerMapY;
+	private int blocksPerMapY, blocksPerMapX;
+	private int tilesPerBlockY, tilesPerBlockX;
 	
 	private ArrayList<Integer> blendedTiles;
 	
@@ -64,17 +65,17 @@ public class TiledLayerSpriteCache {
 		if (!map.orientation.equals("orthogonal"))
 			throw new GdxRuntimeException("Only orthogonal maps supported!");
 		
-		blockHeightTiles = blockHeight;
-		blockWidthTiles = blockWidth;
+		tilesPerBlockX = MathUtils.ceil((float)blockWidth/(float)map.tileWidth);
+		tilesPerBlockY = MathUtils.ceil((float)blockHeight/(float)map.tileHeight);
 		
-		mapHeightPixels = map.height * map.tileHeight;
-		mapWidthPixels = map.width * map.tileWidth;
+		pixelsPerMapX = map.width * map.tileWidth;
+		pixelsPerMapY = map.height * map.tileHeight;
 		
-		mapWidthBlocks = (int) Math.ceil((float)map.width/(float)blockWidth);
-		mapHeightBlocks = (int) Math.ceil((float)map.height/(float)blockHeight);
+		blocksPerMapX = MathUtils.ceil((float)map.width/(float)tilesPerBlockX);
+		blocksPerMapY = MathUtils.ceil((float)map.height/(float)tilesPerBlockY);
 		
-		normalCacheId = new int[mapHeightBlocks][mapWidthBlocks];
-		blendedCacheId = new int[mapHeightBlocks][mapWidthBlocks];
+		normalCacheId = new int[blocksPerMapY][blocksPerMapX];
+		blendedCacheId = new int[blocksPerMapY][blocksPerMapX];
 		
 		String blendedTilesString = map.properties.get("blended tiles");
 		if(blendedTilesString != null){
@@ -94,8 +95,8 @@ public class TiledLayerSpriteCache {
 		//really only need room for all VISIBLE tiles.
 		//Should compute this during compiling
 		
-		for(int row = 0; row < mapHeightBlocks; row++){
-			for(int col = 0; col < mapWidthBlocks; col++){
+		for(int row = 0; row < blocksPerMapY; row++){
+			for(int col = 0; col < blocksPerMapX; col++){
 				normalCacheId[row][col] = addBlock(row, col, false);
 				blendedCacheId[row][col] = addBlock(row, col, true);
 			}
@@ -117,14 +118,14 @@ public class TiledLayerSpriteCache {
 		AtlasRegion region;
 		cache.beginCache();
 		
-		int tileRow = blockRow*blockHeightTiles;
-		int tileCol = blockCol*blockWidthTiles;
+		int tileRow = blockRow*tilesPerBlockY;
+		int tileCol = blockCol*tilesPerBlockX;
 		
 		float x = tileCol*map.tileWidth;
 		float y = (tileRow+1)*map.tileHeight;
 		
-		for(int row = 0; row < blockHeightTiles && tileRow < map.height; row++){
-			for(int col = 0; col < blockWidthTiles && tileCol < map.width; col++){
+		for(int row = 0; row < tilesPerBlockY && tileRow < map.height; row++){
+			for(int col = 0; col < tilesPerBlockX && tileCol < map.width; col++){
 				for(int i = 0; i < map.layers.size(); i++){
 					tile = map.layers.get(i).tile[map.layers.get(i).height - tileRow - 1][tileCol];
 					if(tile != 0){
@@ -138,7 +139,7 @@ public class TiledLayerSpriteCache {
 				tileCol++;
 			}
 			y += map.tileHeight;
-			tileCol = blockCol*blockWidthTiles;
+			tileCol = blockCol*tilesPerBlockX;
 			x = tileCol*map.tileWidth;
 			tileRow++;
 		}
@@ -148,17 +149,21 @@ public class TiledLayerSpriteCache {
 	
 	//This function should not be used most of the time. Use render(int x, int y, int width, int height) instead.
 	public void render() {
-		render(0,0,mapWidthPixels,mapHeightPixels);	
+		render(0,0,pixelsPerMapX,pixelsPerMapY);	
 	}
 	
 	private int initialRow, initialCol, currentRow, currentCol, lastRow, lastCol;
 	
 	public void render(int x, int y, int width, int height) {
+		if(x > pixelsPerMapX || y > pixelsPerMapY) return;
 		initialRow = getBlockRow(y);
 		initialRow = (initialRow > 0) ? initialRow: 0;
-		initialCol = Math.max(getBlockCol(x), 0);
-		lastRow = Math.min(getBlockRow(y + height),mapHeightBlocks-1);
-		lastCol = Math.min(getBlockCol(x + width),mapWidthBlocks-1);
+		initialCol = getBlockCol(x);
+		initialCol = (initialCol > 0) ? initialCol: 0;
+		lastRow = getBlockRow(y + height);
+		lastRow = (lastRow < blocksPerMapY-1) ? lastRow: blocksPerMapY-1;
+		lastCol = getBlockCol(x + width);
+		lastCol = (lastCol < blocksPerMapX-1) ? lastCol: blocksPerMapX-1;
 		
 		cache.begin();
 		for(currentRow = initialRow; currentRow <= lastRow; currentRow++){
@@ -174,12 +179,28 @@ public class TiledLayerSpriteCache {
 		
 	}
 	
+	public int getInitialRow() {
+		return initialRow;
+	}
+
+	public int getInitialCol() {
+		return initialCol;
+	}
+
+	public int getLastRow() {
+		return lastRow;
+	}
+
+	public int getLastCol() {
+		return lastCol;
+	}
+
 	private int getBlockRow(int y){
-		return y/(blockHeightTiles*map.tileHeight);
+		return y/(tilesPerBlockY*map.tileHeight);
 	}
 	
 	private int getBlockCol(int x){
-		return x/(blockWidthTiles*map.tileWidth);
+		return x/(tilesPerBlockX*map.tileWidth);
 	}
 	
 	public Matrix4 getProjectionMatrix(){
@@ -191,22 +212,22 @@ public class TiledLayerSpriteCache {
 	}
 	
 	public int getMapHeightPixels() {
-		return mapHeightPixels;
+		return pixelsPerMapY;
 	}
 
 	public int getMapWidthPixels() {
-		return mapWidthPixels;
+		return pixelsPerMapX;
 	}
 
 	int getRow(int worldY){
 		if(worldY < 0) return 0;
-		if(worldY > mapHeightPixels) return map.tileHeight - 1;
+		if(worldY > pixelsPerMapY) return map.tileHeight - 1;
 		return worldY/map.tileHeight;
 	}
 	
 	int getCol(int worldX){
 		if(worldX < 0) return 0;
-		if(worldX > mapWidthPixels) return map.tileWidth - 1;
+		if(worldX > pixelsPerMapX) return map.tileWidth - 1;
 		return worldX/map.tileWidth;
 	}
 	
