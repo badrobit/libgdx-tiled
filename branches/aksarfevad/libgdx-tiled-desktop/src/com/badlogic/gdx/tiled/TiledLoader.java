@@ -169,12 +169,6 @@ public class TiledLoader extends DefaultHandler{
 			putProperty(parentType, attr.getValue("name"), attr.getValue("value"));
 			return;
 		}
-		
-		if("properties".equals(qName)){
-			return;
-		}
-		
-		System.out.println("Start element for " + qName + " unhandled");
 	}
 	
 	private void putProperty(String parentType, String name, String value){
@@ -202,11 +196,9 @@ public class TiledLoader extends DefaultHandler{
 			currentObject.properties.put(name, value);
 			return;
 		}
-		
-		System.out.println("Property for " + parentType + " unhandled");
 	}
 	
-	//FIXME: no checking is done to make sure that an element has actually started.
+	//No checking is done to make sure that an element has actually started.
 	//Currently this may cause strange results if the XML file is malformed
 	@Override
 	public void endElement(String uri, String name, String qName) {
@@ -256,28 +248,6 @@ public class TiledLoader extends DefaultHandler{
 			currentObject = null;
 			return;
 		}
-		
-		if("image".equals(qName)){
-			return;
-		}
-		
-		if("map".equals(qName)){
-			return;
-		}
-		
-		if("tile".equals(qName)){
-			return;
-		}
-		
-		if("property".equals(qName)){
-			return;
-		}
-		
-		if("properties".equals(qName)){
-			return;
-		}
-		
-		System.out.println("End element for " + qName + " unhandled");
 	}
 	
 	private void unGZip(){
