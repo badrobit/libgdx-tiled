@@ -50,15 +50,12 @@ public class MyRPG implements ApplicationListener {
 	@Override public void render () {
 		int i;
 		
-		//updateMapPosition();
+		updateMapPosition();
 		
 		tmSpriteCache.getTransformMatrix().setToTranslation(-mapPosition.x, -mapPosition.y, 1f);
 		tmSpriteCache.render((int)mapPosition.x, (int)mapPosition.y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		
 		spriteBatch.begin();
-			font.draw(spriteBatch, "maxMapPositionY: " + maxMapPosition.y, 20, 40);
-			font.draw(spriteBatch, "Display Width: " + Gdx.graphics.getWidth(), 20, 60);
-			font.draw(spriteBatch, "Display Height: " + Gdx.graphics.getHeight(), 20, 80);
 			font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 20, 20);
 		spriteBatch.end();
 	}

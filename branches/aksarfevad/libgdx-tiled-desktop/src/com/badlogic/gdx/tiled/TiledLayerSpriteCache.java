@@ -65,14 +65,14 @@ public class TiledLayerSpriteCache {
 		if (!map.orientation.equals("orthogonal"))
 			throw new GdxRuntimeException("Only orthogonal maps supported!");
 		
-		tilesPerBlockX = MathUtils.ceil((float)blockWidth/(float)map.tileWidth);
-		tilesPerBlockY = MathUtils.ceil((float)blockHeight/(float)map.tileHeight);
+		tilesPerBlockX = (int) Math.ceil((float)blockWidth/(float)map.tileWidth);
+		tilesPerBlockY = (int) Math.ceil((float)blockHeight/(float)map.tileHeight);
 		
 		pixelsPerMapX = map.width * map.tileWidth;
 		pixelsPerMapY = map.height * map.tileHeight;
 		
-		blocksPerMapX = MathUtils.ceil((float)map.width/(float)tilesPerBlockX);
-		blocksPerMapY = MathUtils.ceil((float)map.height/(float)tilesPerBlockY);
+		blocksPerMapX = (int) Math.ceil((float)map.width/(float)tilesPerBlockX);
+		blocksPerMapY = (int) Math.ceil((float)map.height/(float)tilesPerBlockY);
 		
 		normalCacheId = new int[blocksPerMapY][blocksPerMapX];
 		blendedCacheId = new int[blocksPerMapY][blocksPerMapX];
@@ -161,9 +161,9 @@ public class TiledLayerSpriteCache {
 		initialCol = getBlockCol(x);
 		initialCol = (initialCol > 0) ? initialCol: 0;
 		lastRow = getBlockRow(y + height);
-		lastRow = (lastRow < blocksPerMapY-1) ? lastRow: blocksPerMapY-1;
+		lastRow = (lastRow < blocksPerMapY) ? lastRow: blocksPerMapY-1;
 		lastCol = getBlockCol(x + width);
-		lastCol = (lastCol < blocksPerMapX-1) ? lastCol: blocksPerMapX-1;
+		lastCol = (lastCol < blocksPerMapX) ? lastCol: blocksPerMapX-1;
 		
 		cache.begin();
 		for(currentRow = initialRow; currentRow <= lastRow; currentRow++){
