@@ -102,7 +102,7 @@ public class MyRPG implements ApplicationListener {
 		tLoader = new TiledLoader();
 		
 		FileHandle mapHandle = Gdx.files.internal("data/tilemap.tmx");
-		FileHandle packfile = Gdx.files.internal("data/packfile");
+		FileHandle packfile = Gdx.files.internal("data/tilemap_packfile");
 		FileHandle baseDir = Gdx.files.internal("data");
 		
 		map = tLoader.createMap(mapHandle, baseDir);

@@ -69,7 +69,13 @@ public class TiledMapPacker {
 		
 		tmxFileHandle = Gdx.files.absolute(tmxFile.getAbsolutePath());
 		imageDirHandle = Gdx.files.absolute(imageDir.getAbsolutePath());
-		Gdx.files.absolute(outputDir.getAbsolutePath());
+		
+		new File(outputDir, tmxFileHandle.name()).delete();
+		if (outputDir.exists()) {
+			String prefix = tmxFileHandle.nameWithoutExtension();
+			for (File file : outputDir.listFiles())
+				if (file.getName().startsWith(prefix)) file.delete();
+		}
 		
 		map = loader.createMap(tmxFileHandle, imageDirHandle);
 		
@@ -98,7 +104,7 @@ public class TiledMapPacker {
 			packer.addImage(tile, map.tmxFile.nameWithoutExtension() + "_" + tilesOnMap.get(i));
 		}
 		
-		packer.process(outputDir, new File(outputDir, "packfile"), tmxFileHandle.nameWithoutExtension());
+		packer.process(outputDir, new File(outputDir, map.tmxFile.nameWithoutExtension() + "_packfile"), tmxFileHandle.nameWithoutExtension());
 		writeUpdatedTMX();
 	}
 	
@@ -246,6 +252,7 @@ public class TiledMapPacker {
 		
 		Settings settings = new Settings();
 		settings.padding = 2;
+		settings.duplicatePadding = true;
 		
 		//Create a new JoglApplication so that Gdx stuff works properly
 		new JoglApplication(new ApplicationListener() {

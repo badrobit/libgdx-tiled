@@ -27,7 +27,6 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 public class TiledLayerSpriteCache {
 	private SpriteCache cache;
 	private int normalCacheId[][], blendedCacheId[][];
-	//TODO: will need 2 cache Ids for each area chunk (block), one for normal and one for blended
 	
 	private TiledMap map;
 	private TileAtlas atlas;
