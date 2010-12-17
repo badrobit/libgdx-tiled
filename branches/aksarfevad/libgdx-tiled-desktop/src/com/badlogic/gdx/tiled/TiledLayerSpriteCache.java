@@ -18,11 +18,13 @@ import java.util.StringTokenizer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL11;
 import com.badlogic.gdx.graphics.SpriteCache;
 import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.IntArray;
 
 public class TiledLayerSpriteCache {
 	private SpriteCache cache;
@@ -35,7 +37,7 @@ public class TiledLayerSpriteCache {
 	private int blocksPerMapY, blocksPerMapX;
 	private int tilesPerBlockY, tilesPerBlockX;
 	
-	private ArrayList<Integer> blendedTiles;
+	private IntArray blendedTiles;
 	
     /**
      * Draws a Tiled layer using a Sprite Cache
@@ -101,13 +103,14 @@ public class TiledLayerSpriteCache {
 		}
 	}
 	
-	private ArrayList<Integer> createFromCSV(String values) {
-		ArrayList<Integer> list = new ArrayList<Integer>();
+	private IntArray createFromCSV(String values) {
+		IntArray list = new IntArray();
 		StringTokenizer st = new StringTokenizer(values,",");
 		while (st.hasMoreTokens())
 		{
-			list.add(Integer.valueOf(st.nextToken()));
+			list.add(Integer.parseInt(st.nextToken()));
 		}
+		list.shrink();
 		return list;
 	}
 
@@ -122,9 +125,11 @@ public class TiledLayerSpriteCache {
 		float x = tileCol*map.tileWidth;
 		float y = (tileRow+1)*map.tileHeight;
 		
-		for(int row = 0; row < tilesPerBlockY && tileRow < map.height; row++){
-			for(int col = 0; col < tilesPerBlockX && tileCol < map.width; col++){
-				for(int i = 0; i < map.layers.size(); i++){
+		int row, col, i;
+		
+		for(row = 0; row < tilesPerBlockY && tileRow < map.height; row++){
+			for(col = 0; col < tilesPerBlockX && tileCol < map.width; col++){
+				for(i = 0; i < map.layers.size(); i++){
 					tile = map.layers.get(i).tile[map.layers.get(i).height - tileRow - 1][tileCol];
 					if(tile != 0){
 						if(blended == blendedTiles.contains(tile)){
@@ -154,14 +159,16 @@ public class TiledLayerSpriteCache {
 	
 	public void render(int x, int y, int width, int height) {
 		if(x > pixelsPerMapX || y > pixelsPerMapY) return;
-		initialRow = getBlockRow(y);
+		initialRow = y/(tilesPerBlockY*map.tileHeight);
 		initialRow = (initialRow > 0) ? initialRow: 0;
-		initialCol = getBlockCol(x);
+		initialCol = x/(tilesPerBlockX*map.tileWidth);
 		initialCol = (initialCol > 0) ? initialCol: 0;
-		lastRow = getBlockRow(y + height);
+		lastRow = (y + height)/(tilesPerBlockY*map.tileHeight);
 		lastRow = (lastRow < blocksPerMapY) ? lastRow: blocksPerMapY-1;
-		lastCol = getBlockCol(x + width);
+		lastCol = (x + width)/(tilesPerBlockX*map.tileWidth);
 		lastCol = (lastCol < blocksPerMapX) ? lastCol: blocksPerMapX-1;
+		
+		Gdx.gl.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		
 		cache.begin();
 		for(currentRow = initialRow; currentRow <= lastRow; currentRow++){
@@ -193,14 +200,6 @@ public class TiledLayerSpriteCache {
 		return lastCol;
 	}
 
-	private int getBlockRow(int y){
-		return y/(tilesPerBlockY*map.tileHeight);
-	}
-	
-	private int getBlockCol(int x){
-		return x/(tilesPerBlockX*map.tileWidth);
-	}
-	
 	public Matrix4 getProjectionMatrix(){
 		return cache.getProjectionMatrix();
 	}

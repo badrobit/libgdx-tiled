@@ -56,6 +56,7 @@ public class TiledLoader extends DefaultHandler{
 	public TiledLoader(){
 	}
 	
+	//FIXME: this should really be a static method. This way
 	public TiledMap createMap(FileHandle tmxFile, FileHandle baseDir){
 		state = INIT;
 		
@@ -78,6 +79,8 @@ public class TiledLoader extends DefaultHandler{
 		return map;
 	}
 
+	//TODO: remove this method, most fields are "required" and should just
+	//throw an error if not available
 	static int parseIntWithDefault(String string, int defaultValue){
 		try{
 			return Integer.parseInt(string);
@@ -96,10 +99,12 @@ public class TiledLoader extends DefaultHandler{
 	public void startElement(String uri, String name, String qName, Attributes attr) {
 		currentBranch.push(qName);
 		
+		try{
+		
 		if("layer".equals(qName)){
 			String layerName = attr.getValue("name");
-			int layerWidth = parseIntWithDefault(attr.getValue("width"), 0);
-			int layerHeight = parseIntWithDefault(attr.getValue("height"), 0);
+			int layerWidth = Integer.parseInt(attr.getValue("width"));
+			int layerHeight = Integer.parseInt(attr.getValue("height"));
 			
 			currentLayer = new TiledLayer(layerName, layerWidth, layerHeight);
 			return;
@@ -114,9 +119,9 @@ public class TiledLoader extends DefaultHandler{
 		}
 				
 		if("tileset".equals(qName)){
-			firstgid = parseIntWithDefault(attr.getValue("firstgid"), 1);
-			tileWidth = parseIntWithDefault(attr.getValue("tilewidth"), 0);
-			tileHeight = parseIntWithDefault(attr.getValue("tileheight"), 0);
+			firstgid = Integer.parseInt(attr.getValue("firstgid"));
+			tileWidth = Integer.parseInt(attr.getValue("tilewidth"));
+			tileHeight = Integer.parseInt(attr.getValue("tileheight"));
 			spacing = parseIntWithDefault(attr.getValue("spacing"), 0);
 			margin = parseIntWithDefault(attr.getValue("margin"), 0);
 			return;
@@ -125,8 +130,8 @@ public class TiledLoader extends DefaultHandler{
 		if("objectgroup".equals(qName)){
 			currentObjectGroup = new TiledObjectGroup();
 			currentObjectGroup.name = attr.getValue("name");
-			currentObjectGroup.height = parseIntWithDefault(attr.getValue("height"), 0);
-			currentObjectGroup.width = parseIntWithDefault(attr.getValue("width"), 0);
+			currentObjectGroup.height = Integer.parseInt(attr.getValue("height"));
+			currentObjectGroup.width = Integer.parseInt(attr.getValue("width"));
 			return;
 		}
 		
@@ -134,8 +139,8 @@ public class TiledLoader extends DefaultHandler{
 			currentObject = new TiledObject();
 			currentObject.name = attr.getValue("name");
 			currentObject.type = attr.getValue("type");
-			currentObject.x = parseIntWithDefault(attr.getValue("x"), 0);
-			currentObject.y = parseIntWithDefault(attr.getValue("y"), 0);
+			currentObject.x = Integer.parseInt(attr.getValue("x"));
+			currentObject.y = Integer.parseInt(attr.getValue("y"));
 			currentObject.width = parseIntWithDefault(attr.getValue("width"), 0);
 			currentObject.height = parseIntWithDefault(attr.getValue("height"), 0);
 			return;
@@ -168,6 +173,10 @@ public class TiledLoader extends DefaultHandler{
 			String parentType = currentBranch.get(currentBranch.size()-3);
 			putProperty(parentType, attr.getValue("name"), attr.getValue("value"));
 			return;
+		}
+		}
+		catch(NumberFormatException e){
+			throw new GdxRuntimeException("Required attribute missing from TMX file!");
 		}
 	}
 	
