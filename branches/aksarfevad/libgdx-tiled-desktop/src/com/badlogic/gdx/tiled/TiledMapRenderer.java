@@ -13,7 +13,6 @@
 
 package com.badlogic.gdx.tiled;
 
-import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import com.badlogic.gdx.Gdx;
@@ -26,7 +25,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.IntArray;
 
-public class TiledLayerSpriteCache {
+public class TiledMapRenderer {
 	private SpriteCache cache;
 	private int normalCacheId[][], blendedCacheId[][];
 	
@@ -46,7 +45,7 @@ public class TiledLayerSpriteCache {
      * @param blockWidth The width of each block to be drawn, in pixels
      * @param blockHeight The width of each block to be drawn, in pixels
      */
-	public TiledLayerSpriteCache(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight) {
+	public TiledMapRenderer(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight) {
 		this(map, atlas, blockWidth, blockHeight, null);
 	}
 	
@@ -58,7 +57,7 @@ public class TiledLayerSpriteCache {
      * @param blockHeight The width of each block to be drawn, in pixels
      * @param shader Shader to use for OpenGL ES 2.0
      */
-	public TiledLayerSpriteCache(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight, ShaderProgram shader) {
+	public TiledMapRenderer(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight, ShaderProgram shader) {
 		this.map = map;
 		this.atlas = atlas;
 		

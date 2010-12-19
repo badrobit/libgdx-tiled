@@ -9,13 +9,4 @@ public class TiledObjectGroup {
 	public HashMap<String,String> properties = new HashMap<String,String>();
 	
 	public ArrayList<TiledObject> objects = new ArrayList<TiledObject>();
-	
-	public void addObject(TiledObject obj){
-		objects.add(obj);
-	}
-	
-	public void addObject(String name, String type, int x, int y, int width, int height){
-		TiledObject obj = new TiledObject();
-		objects.add(obj);
-	}
 }

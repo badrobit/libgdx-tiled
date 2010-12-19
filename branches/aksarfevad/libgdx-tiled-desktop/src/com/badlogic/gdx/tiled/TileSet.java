@@ -31,7 +31,5 @@ public class TileSet {
 		this.tileWidth = tileWidth;
 		this.spacing = spacing;
 		this.margin = margin;
-		
-		//TODO: get blending from tmx file
 	}
 }
