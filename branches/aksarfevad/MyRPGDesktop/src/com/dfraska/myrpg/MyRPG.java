@@ -24,7 +24,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.tiled.TileAtlas;
-import com.badlogic.gdx.tiled.TiledLayerSpriteCache;
+import com.badlogic.gdx.tiled.TiledMapRenderer;
 import com.badlogic.gdx.tiled.TiledLoader;
 import com.badlogic.gdx.tiled.TiledMap;
 import com.badlogic.gdx.tiled.TiledObject;
@@ -39,7 +39,7 @@ public class MyRPG implements ApplicationListener {
 	Vector2 mapDirection = new Vector2(1,1);
 	
 	TiledLoader tLoader;
-	TiledLayerSpriteCache tmSpriteCache;
+	TiledMapRenderer tmSpriteCache;
 	TiledMap map;
 	TileAtlas atlas;
 	
@@ -111,7 +111,7 @@ public class MyRPG implements ApplicationListener {
 		int blockWidth = (int)(Gdx.graphics.getWidth()/2);
 		int blockHeight = (int)(Gdx.graphics.getHeight()/2);
 		
-		tmSpriteCache = new TiledLayerSpriteCache(map, atlas, blockWidth, blockHeight);
+		tmSpriteCache = new TiledMapRenderer(map, atlas, blockWidth, blockHeight);
 		
 		//Add sprites where objects occur
 		for(TiledObjectGroup group: map.objectGroups){
