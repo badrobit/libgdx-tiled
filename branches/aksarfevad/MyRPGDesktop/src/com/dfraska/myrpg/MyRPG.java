@@ -21,6 +21,7 @@ import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.BitmapFont;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.tiled.TileAtlas;
@@ -49,8 +50,9 @@ public class MyRPG implements ApplicationListener {
 
 	@Override public void render () {
 		int i;
-		
 		updateMapPosition();
+		
+		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		
 		tmSpriteCache.getTransformMatrix().setToTranslation(-mapPosition.x, -mapPosition.y, 1f);
 		tmSpriteCache.render((int)mapPosition.x, (int)mapPosition.y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
