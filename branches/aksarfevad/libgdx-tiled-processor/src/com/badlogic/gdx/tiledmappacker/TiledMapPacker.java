@@ -101,7 +101,7 @@ public class TiledMapPacker {
 			
 			if(isBlended(tile)) setBlended(tilesOnMap.get(i));
 			
-			packer.addImage(tile, map.tmxFile.nameWithoutExtension() + "_" + tilesOnMap.get(i));
+			packer.addImage(tile, map.tmxFile.nameWithoutExtension() + " " + tilesOnMap.get(i));
 		}
 		
 		packer.process(outputDir, new File(outputDir, map.tmxFile.nameWithoutExtension() + "_packfile"), tmxFileHandle.nameWithoutExtension());

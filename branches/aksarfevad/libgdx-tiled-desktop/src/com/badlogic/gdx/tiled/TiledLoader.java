@@ -16,6 +16,7 @@ package com.badlogic.gdx.tiled;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Stack;
+import java.util.StringTokenizer;
 import java.util.zip.DataFormatException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
@@ -32,6 +33,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Base64Coder;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.IntArray;
 
 public class TiledLoader extends DefaultHandler {
 
@@ -97,7 +99,8 @@ public class TiledLoader extends DefaultHandler {
 	public void startDocument() {
 
 	}
-
+	
+	int dataCounter = 0;
 	@Override
 	public void startElement(String uri, String name, String qName,
 			Attributes attr) {
@@ -172,7 +175,18 @@ public class TiledLoader extends DefaultHandler {
 			}
 
 			if ("tile".equals(qName)) {
-				currentTile = Integer.parseInt(attr.getValue("id"), 0);
+				switch (state) {
+				case INIT:
+					currentTile = Integer.parseInt(attr.getValue("id"));
+					break;
+				case DATA:
+					int col = dataCounter%currentLayer.width;
+					int row = dataCounter/currentLayer.width;
+					currentLayer.tile[row][col] = Integer.parseInt(attr.getValue("gid"));
+					dataCounter++;
+					break;
+				}
+				
 				return;
 			}
 
@@ -222,29 +236,35 @@ public class TiledLoader extends DefaultHandler {
 	@Override
 	public void endElement(String uri, String name, String qName) {
 		currentBranch.pop();
-
+		
 		if ("data".equals(qName)) {
 			if (dataString == null | "".equals(dataString))
 				return;
-
-			// decode the data
-			if ("base64".equals(encoding)) { // encoding != base64
+			
+			// decode and uncompress the data
+			if ("base64".equals(encoding)) {
 				data = Base64Coder.decode(dataString.trim());
+				
+				if ("gzip".equals(compression)) {
+					unGZip();
+				} else if ("zlib".equals(compression)) {
+					unZlib();
+				} else if (compression == null){
+					arrangeData();
+				}
+				
+			} else if ("csv".equals(encoding) && compression == null) {
+				fromCSV();
+				
+			} else if (encoding == null && compression == null){
+				//startElement() handles most of this
+				dataCounter = 0;//reset counter in case another layer comes through
+				
 			} else {
 				throw new GdxRuntimeException(
-						"Unsupported encoding, only base64 supported");
+						"Unsupported encoding and/or compression format");
 			}
-
-			// uncompress the data
-			if ("gzip".equals(compression)) {
-				unGZip();
-			} else if ("zlib".equals(compression)) {
-				unZlib();
-			}else{
-				throw new GdxRuntimeException(
-						"Unsupported compression, only gzip supported");
-			}
-
+			
 			state = INIT;
 			return;
 		}
@@ -271,6 +291,27 @@ public class TiledLoader extends DefaultHandler {
 			currentObjectGroup.objects.add(currentObject);
 			currentObject = null;
 			return;
+		}
+	}
+	
+	private void fromCSV() {
+		StringTokenizer st = new StringTokenizer(dataString.trim(),",");
+		for (int row = 0; row < currentLayer.height; row++) {
+			for (int col = 0; col < currentLayer.width; col++) {
+				currentLayer.tile[row][col] = Integer.parseInt(st.nextToken().trim());
+			}
+		}
+	}
+
+	private void arrangeData() {
+		int byteCounter = 0;
+		for (int row = 0; row < currentLayer.height; row++) {
+			for (int col = 0; col < currentLayer.width; col++) {
+				currentLayer.tile[row][col] = unsignedByteToInt(data[byteCounter++])
+											| unsignedByteToInt(data[byteCounter++]) << 8
+											| unsignedByteToInt(data[byteCounter++]) << 16
+											| unsignedByteToInt(data[byteCounter++]) << 24;
+			}
 		}
 	}
 	
@@ -337,8 +378,7 @@ public class TiledLoader extends DefaultHandler {
 	public void characters(char ch[], int start, int length) {
 		switch (state) {
 		case DATA:
-			dataString = dataString.concat(String
-					.copyValueOf(ch, start, length));
+			dataString = dataString.concat(String.copyValueOf(ch, start, length));
 			break;
 		default:
 			break;
