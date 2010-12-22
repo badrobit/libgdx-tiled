@@ -24,6 +24,8 @@ public class TiledMapTest extends GdxTest{
 	
 	private static final int SCREEN_WIDTH = 480;
 	private static final int SCREEN_HEIGHT = 320;
+
+	private static final int[] layersList = {0,1,2};
 	
 	SpriteBatch spriteBatch;
 	BitmapFont font;
@@ -34,7 +36,7 @@ public class TiledMapTest extends GdxTest{
 	Vector2 maxCamPosition = new Vector2(0,0);
 	
 	TiledLoader tLoader;
-	TiledMapRenderer tmSpriteCache;
+	TiledMapRenderer tiledMapRenderer;
 	TiledMap map;
 	TileAtlas atlas;
 	
@@ -48,8 +50,8 @@ public class TiledMapTest extends GdxTest{
 			updateCameraPosition();
 		}
 		
-		tmSpriteCache.getProjectionMatrix().set(cam.getCombinedMatrix());
-		tmSpriteCache.render((int)cam.getScreenToWorldX(0), tmSpriteCache.getMapHeightPixels() - (int)cam.getScreenToWorldY(0), Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		tiledMapRenderer.getProjectionMatrix().set(cam.getCombinedMatrix());
+		tiledMapRenderer.render((int)cam.getScreenToWorldX(0), tiledMapRenderer.getMapHeightPixels() - (int)cam.getScreenToWorldY(0), Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), layersList);
 		//tmSpriteCache.render();
 		
 		if (System.nanoTime() - startTime >= 1000000000) {
@@ -59,8 +61,8 @@ public class TiledMapTest extends GdxTest{
 		
 		spriteBatch.begin();
 			font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 20, 20);
-			font.draw(spriteBatch, "InitialCol, LastCol: " + tmSpriteCache.getInitialCol() + "," + tmSpriteCache.getLastCol(), 20, 40);
-			font.draw(spriteBatch, "InitialRow, LastRow: " + tmSpriteCache.getInitialRow() + "," + tmSpriteCache.getLastRow(), 20, 60);
+			font.draw(spriteBatch, "InitialCol, LastCol: " + tiledMapRenderer.getInitialCol() + "," + tiledMapRenderer.getLastCol(), 20, 40);
+			font.draw(spriteBatch, "InitialRow, LastRow: " + tiledMapRenderer.getInitialRow() + "," + tiledMapRenderer.getLastRow(), 20, 60);
 			font.draw(spriteBatch, "cam.getScreenToWorldY(0): " + cam.getScreenToWorldY(0), 20, 80);
 		spriteBatch.end();
 	}
@@ -96,8 +98,8 @@ public class TiledMapTest extends GdxTest{
 		 
 		tLoader = new TiledLoader();
 		
-		FileHandle mapHandle = Gdx.files.internal("data/perspective walls.tmx");
-		FileHandle packfile = Gdx.files.internal("data/perspective walls packfile");
+		FileHandle mapHandle = Gdx.files.internal("data/tilemap gzip.tmx");
+		FileHandle packfile = Gdx.files.internal("data/tilemap gzip packfile");
 		FileHandle baseDir = Gdx.files.internal("data");
 		
 		startTime = System.currentTimeMillis();
@@ -111,7 +113,7 @@ public class TiledMapTest extends GdxTest{
 		int blockHeight = SCREEN_HEIGHT/2;
 		
 		startTime = System.currentTimeMillis();
-		tmSpriteCache = new TiledMapRenderer(map, atlas, blockWidth, blockHeight);
+		tiledMapRenderer = new TiledMapRenderer(map, atlas, blockWidth, blockHeight);
 		endTime = System.currentTimeMillis();
 		System.out.println("Created cache in " + (endTime - startTime) + "mS");
 		
@@ -126,12 +128,12 @@ public class TiledMapTest extends GdxTest{
 		
 		cam = new OrthographicCamera();
 		cam.setViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
-		cam.getPosition().set(tmSpriteCache.getMapWidthPixels()/2, tmSpriteCache.getMapHeightPixels()/2 ,0);
+		cam.getPosition().set(tiledMapRenderer.getMapWidthPixels()/2, tiledMapRenderer.getMapHeightPixels()/2 ,0);
 		camController = new OrthoCamController(cam);
 		Gdx.input.setInputProcessor(camController);
 		
-		float maxX = tmSpriteCache.getMapWidthPixels();
-		float maxY = tmSpriteCache.getMapHeightPixels();
+		float maxX = tiledMapRenderer.getMapWidthPixels();
+		float maxY = tiledMapRenderer.getMapHeightPixels();
 		maxCamPosition.set(maxX,maxY);
 	}
 	

@@ -37,6 +37,7 @@ public class TiledMapRenderer {
 	private int tilesPerBlockY, tilesPerBlockX;
 	
 	private IntArray blendedTiles;
+	private int[] allLayers;
 	
     /**
      * Draws a Tiled layer using a Sprite Cache
@@ -58,15 +59,17 @@ public class TiledMapRenderer {
      * @param shader Shader to use for OpenGL ES 2.0
      */
 	public TiledMapRenderer(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight, ShaderProgram shader) {
-		//FIXME: needs to be split into layers again so that the user can
-		//then choose which ones get rendered when calling render()
-		//FIXME: need to test tiles that have a larger width/height
-		//than the mapTileWidth/Height (note: draw order matters)
 		this.map = map;
 		this.atlas = atlas;
 		
 		if (!map.orientation.equals("orthogonal"))
 			throw new GdxRuntimeException("Only orthogonal maps supported!");
+		
+		//allLayers array simplifies calling render without a layer list
+		allLayers = new int[map.layers.size()];
+		for(int i = 0; i < map.layers.size(); i++){
+			allLayers[i] = i;
+		}
 		
 		tilesPerBlockX = (int) Math.ceil((float)blockWidth/(float)map.tileWidth);
 		tilesPerBlockY = (int) Math.ceil((float)blockHeight/(float)map.tileHeight);
@@ -152,20 +155,20 @@ public class TiledMapRenderer {
 		render(0,0,pixelsPerMapX,pixelsPerMapY);	
 	}
 	
+	public void render(int x, int y, int width, int height) {
+		render(x,y,width,height,allLayers);
+	}
+	
 	private int initialRow, initialCol, currentRow, currentCol, lastRow, lastCol, currentLayer;
 	
-	public void render(int x, int y, int width, int height) {
+	public void render(int x, int y, int width, int height, int[] layers){
 		if(x > pixelsPerMapX || y > pixelsPerMapY) return;
-		
 		initialRow = y/(tilesPerBlockY*map.tileHeight);
-		initialRow = (initialRow > 0) ? initialRow: 0;
-		
+		initialRow = (initialRow > 0) ? initialRow: 0;	
 		initialCol = x/(tilesPerBlockX*map.tileWidth);
 		initialCol = (initialCol > 0) ? initialCol: 0;
-		
 		lastRow = (y + height)/(tilesPerBlockY*map.tileHeight);
 		lastRow = (lastRow < blocksPerMapY) ? lastRow: blocksPerMapY-1;
-		
 		lastCol = (x + width)/(tilesPerBlockX*map.tileWidth);
 		lastCol = (lastCol < blocksPerMapX) ? lastCol: blocksPerMapX-1;
 		
@@ -174,17 +177,16 @@ public class TiledMapRenderer {
 		cache.begin();
 		for(currentRow = initialRow; currentRow <= lastRow; currentRow++){
 			for(currentCol = initialCol; currentCol <= lastCol; currentCol++){
-				for(currentLayer = 0; currentLayer < map.layers.size(); currentLayer++){
+				for(currentLayer = 0; currentLayer < layers.length; currentLayer++){
 					Gdx.gl.glDisable(GL10.GL_BLEND);
-					cache.draw(normalCacheId[currentLayer][currentRow][currentCol]);
+					cache.draw(normalCacheId[layers[currentLayer]][currentRow][currentCol]);
 					Gdx.gl.glEnable(GL10.GL_BLEND);
-					cache.draw(blendedCacheId[currentLayer][currentRow][currentCol]);
+					cache.draw(blendedCacheId[layers[currentLayer]][currentRow][currentCol]);
 				}
 			}
 		}
 		cache.end();
 		Gdx.gl.glDisable(GL10.GL_BLEND);
-		
 	}
 	
 	public int getInitialRow() {
