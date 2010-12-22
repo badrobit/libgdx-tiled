@@ -55,7 +55,7 @@ public class MyRPG implements ApplicationListener {
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		
 		tmSpriteCache.getTransformMatrix().setToTranslation(-mapPosition.x, -mapPosition.y, 1f);
-		tmSpriteCache.render((int)mapPosition.x, (int)mapPosition.y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		tmSpriteCache.render((int)mapPosition.x, tmSpriteCache.getMapHeightPixels()-(int)mapPosition.y, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		
 		spriteBatch.begin();
 			font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 20, 20);
@@ -86,12 +86,13 @@ public class MyRPG implements ApplicationListener {
 	@Override public void resize (int width, int height) {
 		int i;
 		spriteBatch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
-		tmSpriteCache.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
-		
-		mapPosition.set(0,0);
-		float maxX = tmSpriteCache.getMapWidthPixels() - width;
-		float maxY = tmSpriteCache.getMapHeightPixels() - height;
-		maxMapPosition.set(maxX,maxY);
+		if(tmSpriteCache != null){
+			tmSpriteCache.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
+			mapPosition.set(0,0);
+			float maxX = tmSpriteCache.getMapWidthPixels() - width;
+			float maxY = tmSpriteCache.getMapHeightPixels() - height;
+			maxMapPosition.set(maxX,maxY);
+		}
 	}
 
 	@Override public void create () {
@@ -103,8 +104,8 @@ public class MyRPG implements ApplicationListener {
 		 
 		tLoader = new TiledLoader();
 		
-		FileHandle mapHandle = Gdx.files.internal("data/tilemap zlib.tmx");
-		FileHandle packfile = Gdx.files.internal("data/tilemap zlib packfile");
+		FileHandle mapHandle = Gdx.files.internal("data/perspective walls.tmx");
+		FileHandle packfile = Gdx.files.internal("data/perspective walls packfile");
 		FileHandle baseDir = Gdx.files.internal("data");
 		
 		map = tLoader.createMap(mapHandle, baseDir);

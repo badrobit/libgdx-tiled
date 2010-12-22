@@ -33,7 +33,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Base64Coder;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import com.badlogic.gdx.utils.IntArray;
 
 public class TiledLoader extends DefaultHandler {
 
@@ -100,7 +99,7 @@ public class TiledLoader extends DefaultHandler {
 
 	}
 	
-	int dataCounter = 0;
+	int dataCounter = 0, row, col;
 	@Override
 	public void startElement(String uri, String name, String qName,
 			Attributes attr) {
@@ -180,8 +179,8 @@ public class TiledLoader extends DefaultHandler {
 					currentTile = Integer.parseInt(attr.getValue("id"));
 					break;
 				case DATA:
-					int col = dataCounter%currentLayer.width;
-					int row = dataCounter/currentLayer.width;
+					col = dataCounter%currentLayer.width;
+					row = dataCounter/currentLayer.width;
 					currentLayer.tile[row][col] = Integer.parseInt(attr.getValue("gid"));
 					dataCounter++;
 					break;
@@ -197,7 +196,7 @@ public class TiledLoader extends DefaultHandler {
 				return;
 			}
 		} catch (NumberFormatException e) {
-			throw new GdxRuntimeException("Required attribute missing from TMX file!");
+			throw new GdxRuntimeException("Required attribute missing from TMX file! Property for " + qName + " missing.");
 			//Note: Required attributes are parsed with "Integer.parseInt()" directly
 			//Non-required are parsed with parseIntWithDefault()
 		}
@@ -259,7 +258,6 @@ public class TiledLoader extends DefaultHandler {
 			} else if (encoding == null && compression == null){
 				//startElement() handles most of this
 				dataCounter = 0;//reset counter in case another layer comes through
-				
 			} else {
 				throw new GdxRuntimeException(
 						"Unsupported encoding and/or compression format");

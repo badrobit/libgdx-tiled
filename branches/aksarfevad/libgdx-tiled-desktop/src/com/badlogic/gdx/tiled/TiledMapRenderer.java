@@ -24,11 +24,10 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.MathUtils;
 
 public class TiledMapRenderer {
 	private SpriteCache cache;
-	private int normalCacheId[][], blendedCacheId[][];
+	private int normalCacheId[][][], blendedCacheId[][][];
 	
 	private TiledMap map;
 	private TileAtlas atlas;
@@ -59,6 +58,10 @@ public class TiledMapRenderer {
      * @param shader Shader to use for OpenGL ES 2.0
      */
 	public TiledMapRenderer(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight, ShaderProgram shader) {
+		//FIXME: needs to be split into layers again so that the user can
+		//then choose which ones get rendered when calling render()
+		//FIXME: need to test tiles that have a larger width/height
+		//than the mapTileWidth/Height (note: draw order matters)
 		this.map = map;
 		this.atlas = atlas;
 		
@@ -74,8 +77,8 @@ public class TiledMapRenderer {
 		blocksPerMapX = (int) Math.ceil((float)map.width/(float)tilesPerBlockX);
 		blocksPerMapY = (int) Math.ceil((float)map.height/(float)tilesPerBlockY);
 		
-		normalCacheId = new int[blocksPerMapY][blocksPerMapX];
-		blendedCacheId = new int[blocksPerMapY][blocksPerMapX];
+		normalCacheId = new int[map.layers.size()][blocksPerMapY][blocksPerMapX];
+		blendedCacheId = new int[map.layers.size()][blocksPerMapY][blocksPerMapX];
 		
 		String blendedTilesString = map.properties.get("blended tiles");
 		if(blendedTilesString != null){
@@ -94,11 +97,14 @@ public class TiledMapRenderer {
 		//TODO: Don't really need a cache that holds all tiles,
 		//really only need room for all VISIBLE tiles.
 		//Should compute this during compiling
+		int row, col, layer;
 		
-		for(int row = 0; row < blocksPerMapY; row++){
-			for(int col = 0; col < blocksPerMapX; col++){
-				normalCacheId[row][col] = addBlock(row, col, false);
-				blendedCacheId[row][col] = addBlock(row, col, true);
+		for(row = 0; row < blocksPerMapY; row++){
+			for(col = 0; col < blocksPerMapX; col++){
+				for(layer = 0; layer < map.layers.size(); layer++){
+					normalCacheId[layer][row][col] = addBlock(map.layers.get(layer), row, col, false);
+					blendedCacheId[layer][row][col] = addBlock(map.layers.get(layer), row, col, true);
+				}
 			}
 		}
 	}
@@ -113,38 +119,29 @@ public class TiledMapRenderer {
 		list.shrink();
 		return list;
 	}
-
-	private int addBlock(int blockRow, int blockCol, boolean blended){
+	
+	private int addBlock(TiledLayer layer, int blockRow, int blockCol, boolean blended){
 		int tile;
 		AtlasRegion region;
 		cache.beginCache();
 		
-		int tileRow = blockRow*tilesPerBlockY;
-		int tileCol = blockCol*tilesPerBlockX;
+		int firstCol = blockCol*tilesPerBlockX;
+		int firstRow = blockRow*tilesPerBlockY;
+		int lastCol = Math.min(firstCol+tilesPerBlockX, map.width);
+		int lastRow = Math.min(firstRow+tilesPerBlockY, map.height);
 		
-		float x = tileCol*map.tileWidth;
-		float y = (tileRow+1)*map.tileHeight;
+		int row, col;
 		
-		int row, col, i;
-		
-		for(row = 0; row < tilesPerBlockY && tileRow < map.height; row++){
-			for(col = 0; col < tilesPerBlockX && tileCol < map.width; col++){
-				for(i = 0; i < map.layers.size(); i++){
-					tile = map.layers.get(i).tile[map.layers.get(i).height - tileRow - 1][tileCol];
-					if(tile != 0){
-						if(blended == blendedTiles.contains(tile)){
-							region = atlas.getRegion(tile);
-							cache.add(region, x, y);
-						}
+		for(row = firstRow; row < lastRow; row++){
+			for(col = firstCol; col < lastCol; col++){
+				tile = layer.tile[row][col];
+				if(tile != 0){
+					if(blended == blendedTiles.contains(tile)){
+						region = atlas.getRegion(tile);
+						cache.add(region, col*map.tileWidth, (map.height - row)*map.tileHeight);
 					}
 				}
-				x += map.tileWidth;
-				tileCol++;
 			}
-			y += map.tileHeight;
-			tileCol = blockCol*tilesPerBlockX;
-			x = tileCol*map.tileWidth;
-			tileRow++;
 		}
 		
 		return cache.endCache();
@@ -155,16 +152,20 @@ public class TiledMapRenderer {
 		render(0,0,pixelsPerMapX,pixelsPerMapY);	
 	}
 	
-	private int initialRow, initialCol, currentRow, currentCol, lastRow, lastCol;
+	private int initialRow, initialCol, currentRow, currentCol, lastRow, lastCol, currentLayer;
 	
 	public void render(int x, int y, int width, int height) {
 		if(x > pixelsPerMapX || y > pixelsPerMapY) return;
+		
 		initialRow = y/(tilesPerBlockY*map.tileHeight);
 		initialRow = (initialRow > 0) ? initialRow: 0;
+		
 		initialCol = x/(tilesPerBlockX*map.tileWidth);
 		initialCol = (initialCol > 0) ? initialCol: 0;
+		
 		lastRow = (y + height)/(tilesPerBlockY*map.tileHeight);
 		lastRow = (lastRow < blocksPerMapY) ? lastRow: blocksPerMapY-1;
+		
 		lastCol = (x + width)/(tilesPerBlockX*map.tileWidth);
 		lastCol = (lastCol < blocksPerMapX) ? lastCol: blocksPerMapX-1;
 		
@@ -173,10 +174,12 @@ public class TiledMapRenderer {
 		cache.begin();
 		for(currentRow = initialRow; currentRow <= lastRow; currentRow++){
 			for(currentCol = initialCol; currentCol <= lastCol; currentCol++){
-				Gdx.gl.glDisable(GL10.GL_BLEND);
-				cache.draw(normalCacheId[currentRow][currentCol]);
-				Gdx.gl.glEnable(GL10.GL_BLEND);
-				cache.draw(blendedCacheId[currentRow][currentCol]);
+				for(currentLayer = 0; currentLayer < map.layers.size(); currentLayer++){
+					Gdx.gl.glDisable(GL10.GL_BLEND);
+					cache.draw(normalCacheId[currentLayer][currentRow][currentCol]);
+					Gdx.gl.glEnable(GL10.GL_BLEND);
+					cache.draw(blendedCacheId[currentLayer][currentRow][currentCol]);
+				}
 			}
 		}
 		cache.end();
