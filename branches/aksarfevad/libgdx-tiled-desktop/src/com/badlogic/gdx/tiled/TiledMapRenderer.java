@@ -19,7 +19,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.GL11;
 import com.badlogic.gdx.graphics.SpriteCache;
-import com.badlogic.gdx.graphics.TextureRegion;
 import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
@@ -96,6 +95,8 @@ public class TiledMapRenderer {
 			overdrawYtemp = map.tileSets.get(i).tileHeight - map.tileHeight;
 			if(overdrawYtemp > overdrawY) overdrawY = overdrawYtemp;
 		}
+		
+		overdrawY += map.tileHeight;
 		
 		String blendedTilesString = map.properties.get("blended tiles");
 		if(blendedTilesString != null){
