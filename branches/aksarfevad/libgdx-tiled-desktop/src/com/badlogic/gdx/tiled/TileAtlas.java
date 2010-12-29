@@ -11,7 +11,7 @@ public class TileAtlas {
 	private List<AtlasRegion> atlasRegions;
 	
 	public TileAtlas(TiledMap map, FileHandle packFile, FileHandle imagesDir){
-		textureAtlas = new TextureAtlas(packFile, imagesDir, true);
+		textureAtlas = new TextureAtlas(packFile, imagesDir, false);
 		atlasRegions = (List<AtlasRegion>) textureAtlas.findRegions(map.tmxFile.nameWithoutExtension());
 	}
 

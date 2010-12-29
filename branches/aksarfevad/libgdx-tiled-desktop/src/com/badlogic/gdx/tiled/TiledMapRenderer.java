@@ -19,6 +19,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.GL11;
 import com.badlogic.gdx.graphics.SpriteCache;
+import com.badlogic.gdx.graphics.TextureRegion;
 import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
@@ -35,6 +36,8 @@ public class TiledMapRenderer {
 	private int pixelsPerMapX, pixelsPerMapY;
 	private int blocksPerMapY, blocksPerMapX;
 	private int tilesPerBlockY, tilesPerBlockX;
+	
+	private int overdrawX = 0, overdrawY = 0;
 	
 	private IntArray blendedTiles;
 	private int[] allLayers;
@@ -62,12 +65,14 @@ public class TiledMapRenderer {
 		this.map = map;
 		this.atlas = atlas;
 		
+		int i;
+		
 		if (!map.orientation.equals("orthogonal"))
 			throw new GdxRuntimeException("Only orthogonal maps supported!");
 		
 		//allLayers array simplifies calling render without a layer list
 		allLayers = new int[map.layers.size()];
-		for(int i = 0; i < map.layers.size(); i++){
+		for(i = 0; i < map.layers.size(); i++){
 			allLayers[i] = i;
 		}
 		
@@ -82,6 +87,15 @@ public class TiledMapRenderer {
 		
 		normalCacheId = new int[map.layers.size()][blocksPerMapY][blocksPerMapX];
 		blendedCacheId = new int[map.layers.size()][blocksPerMapY][blocksPerMapX];
+		 
+		int overdrawXtemp, overdrawYtemp;
+		for(i=0; i < map.tileSets.size(); i++){
+			overdrawXtemp = map.tileSets.get(i).tileWidth - map.tileWidth;
+			if(overdrawXtemp > overdrawX) overdrawX = overdrawXtemp;
+			
+			overdrawYtemp = map.tileSets.get(i).tileHeight - map.tileHeight;
+			if(overdrawYtemp > overdrawY) overdrawY = overdrawYtemp;
+		}
 		
 		String blendedTilesString = map.properties.get("blended tiles");
 		if(blendedTilesString != null){
@@ -89,7 +103,7 @@ public class TiledMapRenderer {
 		}
 		
 		int maxCacheSize = 0;
-		for(int i = 0; i < map.layers.size(); i++){
+		for(i = 0; i < map.layers.size(); i++){
 			maxCacheSize += map.layers.get(i).height * map.layers.get(i).width;
 		}
 		
@@ -100,13 +114,14 @@ public class TiledMapRenderer {
 		//TODO: Don't really need a cache that holds all tiles,
 		//really only need room for all VISIBLE tiles.
 		//Should compute this during compiling
-		int row, col, layer;
+		
+		int row, col;
 		
 		for(row = 0; row < blocksPerMapY; row++){
 			for(col = 0; col < blocksPerMapX; col++){
-				for(layer = 0; layer < map.layers.size(); layer++){
-					normalCacheId[layer][row][col] = addBlock(map.layers.get(layer), row, col, false);
-					blendedCacheId[layer][row][col] = addBlock(map.layers.get(layer), row, col, true);
+				for(i = 0; i < map.layers.size(); i++){
+					normalCacheId[i][row][col] = addBlock(map.layers.get(i), row, col, false);
+					blendedCacheId[i][row][col] = addBlock(map.layers.get(i), row, col, true);
 				}
 			}
 		}
@@ -141,7 +156,7 @@ public class TiledMapRenderer {
 				if(tile != 0){
 					if(blended == blendedTiles.contains(tile)){
 						region = atlas.getRegion(tile);
-						cache.add(region, col*map.tileWidth, (map.height - row)*map.tileHeight);
+						cache.add(region, col*map.tileWidth + region.offsetX, (map.height - row)*map.tileHeight + region.originalHeight - region.packedHeight - region.offsetY);
 					}
 				}
 			}
@@ -163,13 +178,13 @@ public class TiledMapRenderer {
 	
 	public void render(int x, int y, int width, int height, int[] layers){
 		if(x > pixelsPerMapX || y > pixelsPerMapY) return;
-		initialRow = y/(tilesPerBlockY*map.tileHeight);
+		initialRow = (y-overdrawY)/(tilesPerBlockY*map.tileHeight);
 		initialRow = (initialRow > 0) ? initialRow: 0;	
-		initialCol = x/(tilesPerBlockX*map.tileWidth);
+		initialCol = (x-overdrawX)/(tilesPerBlockX*map.tileWidth);
 		initialCol = (initialCol > 0) ? initialCol: 0;
-		lastRow = (y + height)/(tilesPerBlockY*map.tileHeight);
+		lastRow = (y + height + overdrawY)/(tilesPerBlockY*map.tileHeight);
 		lastRow = (lastRow < blocksPerMapY) ? lastRow: blocksPerMapY-1;
-		lastCol = (x + width)/(tilesPerBlockX*map.tileWidth);
+		lastCol = (x + width + overdrawX)/(tilesPerBlockX*map.tileWidth);
 		lastCol = (lastCol < blocksPerMapX) ? lastCol: blocksPerMapX-1;
 		
 		Gdx.gl.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
