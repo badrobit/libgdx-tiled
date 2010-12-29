@@ -159,7 +159,8 @@ public class TiledMapPacker {
 		for(int i = 0; i < values.size() - 1; i++){
 			temp += values.get(i) + ",";
 		}
-		temp += values.get(values.size()-1);
+		if(values.size() > 0)
+			temp += values.get(values.size()-1);
 		return temp;
 	}
 	
