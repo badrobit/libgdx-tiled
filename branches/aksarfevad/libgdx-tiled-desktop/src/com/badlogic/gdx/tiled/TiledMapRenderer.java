@@ -98,8 +98,6 @@ public class TiledMapRenderer {
 			if(overdrawYtemp > overdrawY) overdrawY = overdrawYtemp;
 		}
 		
-		overdrawY += map.tileHeight;
-		
 		String blendedTilesString = map.properties.get("blended tiles");
 		if(blendedTilesString != null){
 			blendedTiles = createFromCSV(blendedTilesString);
@@ -161,7 +159,7 @@ public class TiledMapRenderer {
 				if(tile != 0){
 					if(blended == blendedTiles.contains(tile)){
 						region = atlas.getRegion(tile);
-						cache.add(region, col*map.tileWidth + region.offsetX, (map.height - row)*map.tileHeight + region.originalHeight - region.packedHeight - region.offsetY);
+						cache.add(region, col*map.tileWidth + region.offsetX, (map.height - row)*map.tileHeight - region.packedHeight - region.offsetY);
 					}
 				}
 			}
