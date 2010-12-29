@@ -29,9 +29,9 @@ public class TiledMapRenderer {
 	private SpriteCache cache;
 	private int normalCacheId[][][], blendedCacheId[][][];
 	
-	private TiledMap map;
 	private TileAtlas atlas;
 	
+	private int tileWidth, tileHeight;
 	private int pixelsPerMapX, pixelsPerMapY;
 	private int blocksPerMapY, blocksPerMapX;
 	private int tilesPerBlockY, tilesPerBlockX;
@@ -61,8 +61,9 @@ public class TiledMapRenderer {
      * @param shader Shader to use for OpenGL ES 2.0
      */
 	public TiledMapRenderer(TiledMap map, TileAtlas atlas, int blockWidth, int blockHeight, ShaderProgram shader) {
-		this.map = map;
 		this.atlas = atlas;
+		this.tileWidth = map.tileWidth;
+		this.tileHeight = map.tileHeight;
 		
 		int i;
 		
@@ -87,6 +88,7 @@ public class TiledMapRenderer {
 		normalCacheId = new int[map.layers.size()][blocksPerMapY][blocksPerMapX];
 		blendedCacheId = new int[map.layers.size()][blocksPerMapY][blocksPerMapX];
 		 
+		//Calculate overdrawing values
 		int overdrawXtemp, overdrawYtemp;
 		for(i=0; i < map.tileSets.size(); i++){
 			overdrawXtemp = map.tileSets.get(i).tileWidth - map.tileWidth;
@@ -107,22 +109,22 @@ public class TiledMapRenderer {
 		for(i = 0; i < map.layers.size(); i++){
 			maxCacheSize += map.layers.get(i).height * map.layers.get(i).width;
 		}
+		//TODO: Don't really need a cache that holds all tiles,
+		//really only need room for all VISIBLE tiles.
+		//Should compute this during compiling instead
 		
 		if(shader == null)
 			cache = new SpriteCache(maxCacheSize, false);
 		else
 			cache = new SpriteCache(maxCacheSize, shader, false);
-		//TODO: Don't really need a cache that holds all tiles,
-		//really only need room for all VISIBLE tiles.
-		//Should compute this during compiling
 		
 		int row, col;
 		
 		for(row = 0; row < blocksPerMapY; row++){
 			for(col = 0; col < blocksPerMapX; col++){
 				for(i = 0; i < map.layers.size(); i++){
-					normalCacheId[i][row][col] = addBlock(map.layers.get(i), row, col, false);
-					blendedCacheId[i][row][col] = addBlock(map.layers.get(i), row, col, true);
+					normalCacheId[i][row][col] = addBlock(map, i, row, col, false);
+					blendedCacheId[i][row][col] = addBlock(map, i, row, col, true);
 				}
 			}
 		}
@@ -139,10 +141,12 @@ public class TiledMapRenderer {
 		return list;
 	}
 	
-	private int addBlock(TiledLayer layer, int blockRow, int blockCol, boolean blended){
+	private int addBlock(TiledMap map, int layerNum, int blockRow, int blockCol, boolean blended){
 		int tile;
 		AtlasRegion region;
 		cache.beginCache();
+		
+		TiledLayer layer = map.layers.get(layerNum);
 		
 		int firstCol = blockCol*tilesPerBlockX;
 		int firstRow = blockRow*tilesPerBlockY;
@@ -179,13 +183,13 @@ public class TiledMapRenderer {
 	
 	public void render(int x, int y, int width, int height, int[] layers){
 		if(x > pixelsPerMapX || y > pixelsPerMapY) return;
-		initialRow = (y-overdrawY)/(tilesPerBlockY*map.tileHeight);
+		initialRow = (y - overdrawY)/(tilesPerBlockY*tileHeight);
 		initialRow = (initialRow > 0) ? initialRow: 0;	
-		initialCol = (x-overdrawX)/(tilesPerBlockX*map.tileWidth);
+		initialCol = (x - overdrawX)/(tilesPerBlockX*tileWidth);
 		initialCol = (initialCol > 0) ? initialCol: 0;
-		lastRow = (y + height + overdrawY)/(tilesPerBlockY*map.tileHeight);
+		lastRow = (y + height + overdrawY)/(tilesPerBlockY*tileHeight);
 		lastRow = (lastRow < blocksPerMapY) ? lastRow: blocksPerMapY-1;
-		lastCol = (x + width + overdrawX)/(tilesPerBlockX*map.tileWidth);
+		lastCol = (x + width + overdrawX)/(tilesPerBlockX*tileWidth);
 		lastCol = (lastCol < blocksPerMapX) ? lastCol: blocksPerMapX-1;
 		
 		Gdx.gl.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -239,14 +243,14 @@ public class TiledMapRenderer {
 
 	int getRow(int worldY){
 		if(worldY < 0) return 0;
-		if(worldY > pixelsPerMapY) return map.tileHeight - 1;
-		return worldY/map.tileHeight;
+		if(worldY > pixelsPerMapY) return tileHeight - 1;
+		return worldY/tileHeight;
 	}
 	
 	int getCol(int worldX){
 		if(worldX < 0) return 0;
-		if(worldX > pixelsPerMapX) return map.tileWidth - 1;
-		return worldX/map.tileWidth;
+		if(worldX > pixelsPerMapX) return tileWidth - 1;
+		return worldX/tileWidth;
 	}
 	
 	void dispose() {
