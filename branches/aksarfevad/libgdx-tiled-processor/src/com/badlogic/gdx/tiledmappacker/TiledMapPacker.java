@@ -51,7 +51,6 @@ import com.badlogic.gdx.tiled.TiledMap;
 public class TiledMapPacker {
 	
 	private TexturePacker packer;
-	private TiledLoader loader;
 	private TiledMap map;
 	
 	private File outputDir;
@@ -59,11 +58,7 @@ public class TiledMapPacker {
 	private FileHandle imageDirHandle;
 	
 	private ArrayList<Integer> blendedTiles = new ArrayList<Integer>();
-	
-	TiledMapPacker(){
-		loader = new TiledLoader();
-	}
-	
+
 	public void processMap(File tmxFile, File imageDir, File outputDir, Settings settings) throws IOException{
 		this.outputDir = outputDir;
 		
@@ -77,7 +72,7 @@ public class TiledMapPacker {
 				if (file.getName().startsWith(prefix)) file.delete();
 		}
 		
-		map = loader.createMap(tmxFileHandle, imageDirHandle);
+		map = TiledLoader.createMap(tmxFileHandle, imageDirHandle);
 		
 		packMap(map, settings);
 	}
@@ -124,7 +119,7 @@ public class TiledMapPacker {
 			
 			Node map = doc.getFirstChild();
 			Node properties = getFirstChildNodeByName(map, "properties");
-			Node property = getChildByAttrValue(properties, "property", "name", "blended tiles");
+			Node property = getFirstChildByNameAttrValue(properties, "property", "name", "blended tiles");
 			
 			NamedNodeMap attributes = property.getAttributes();
 			Node value = attributes.getNamedItem("value");
@@ -154,7 +149,7 @@ public class TiledMapPacker {
 		}
 	}
 	
-	private String toCSV(ArrayList<Integer> values){
+	private static String toCSV(ArrayList<Integer> values){
 		String temp = "";
 		for(int i = 0; i < values.size() - 1; i++){
 			temp += values.get(i) + ",";
@@ -164,22 +159,28 @@ public class TiledMapPacker {
 		return temp;
 	}
 	
-	private Node getFirstChildNodeByName(Node node, String name){
-		NodeList childNodes = node.getChildNodes();
+	/**
+	 * If the child node doesn't exist, it is created.
+	 */
+	private static Node getFirstChildNodeByName(Node parent, String child){
+		NodeList childNodes = parent.getChildNodes();
 		for(int i = 0; i < childNodes.getLength(); i++){
-			if(childNodes.item(i).getNodeName().equals(name)){
+			if(childNodes.item(i).getNodeName().equals(child)){
 				return childNodes.item(i);
 			}	
 		}
 		
 		if(childNodes.item(0) != null)
-			return node.insertBefore(node.getOwnerDocument().createElement(name), childNodes.item(0));
+			return parent.insertBefore(parent.getOwnerDocument().createElement(child), childNodes.item(0));
 		else
-			return node.appendChild(node.getOwnerDocument().createElement(name));
+			return parent.appendChild(parent.getOwnerDocument().createElement(child));
 	}
 	
-	private Node getChildByAttrValue(Node node, String childName, String attr, String value){
-		//Node property = getChildNodeByAttrValue(properties, "property", "name", "blended tiles")
+	/**
+	 * Get the first child node that has 
+	 */
+	//Node property = getFirstChildByAttrValue(properties, "property", "name", "blended tiles")
+	private static Node getFirstChildByNameAttrValue(Node node, String childName, String attr, String value){
 		NodeList childNodes = node.getChildNodes();
 		for(int i = 0; i < childNodes.getLength(); i++){
 			if(childNodes.item(i).getNodeName().equals(childName)){
@@ -205,7 +206,7 @@ public class TiledMapPacker {
 		}
 	}
 	
-	private boolean isBlended(BufferedImage tile) {
+	private static boolean isBlended(BufferedImage tile) {
 		int[] rgbArray = new int[tile.getWidth()*tile.getHeight()];
 		tile.getRGB(0, 0, tile.getWidth(), tile.getHeight(), rgbArray, 0, tile.getWidth());
 		for(int i = 0; i < tile.getWidth()*tile.getHeight(); i++){
@@ -232,7 +233,7 @@ public class TiledMapPacker {
 		return null;
 	}
 	
-	private ArrayList<Integer> getTilesOnMap(TiledMap map){
+	private static ArrayList<Integer> getTilesOnMap(TiledMap map){
 		ArrayList<Integer> tileList = new ArrayList<Integer>();
 		
 		for(TiledLayer layer: map.layers){

@@ -43,8 +43,8 @@ public class TiledMapRenderer {
 	
     /**
      * Draws a Tiled layer using a Sprite Cache
-     * @param layers The layer to be drawn
-     * @param tileSets The tile set used to draw this layer - note only one tile set per Tiled layer
+     * @param map The map to be drawn
+     * @param atlas The tile atlas to be used when drawing the map
      * @param blockWidth The width of each block to be drawn, in pixels
      * @param blockHeight The width of each block to be drawn, in pixels
      */
@@ -54,8 +54,8 @@ public class TiledMapRenderer {
 	
     /**
      * Draws a Tiled layer using a Sprite Cache
-     * @param layers The layer to be drawn
-     * @param tileSets The tile set used to draw this layer - note only one tile set per Tiled layer
+     * @param map The map to be drawn
+     * @param atlas The tile atlas to be used when drawing the map
      * @param blockWidth The width of each block to be drawn, in pixels
      * @param blockHeight The width of each block to be drawn, in pixels
      * @param shader Shader to use for OpenGL ES 2.0

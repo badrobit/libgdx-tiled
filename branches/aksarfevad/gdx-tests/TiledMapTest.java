@@ -35,7 +35,6 @@ public class TiledMapTest extends GdxTest{
         Vector3 camDirection = new Vector3(1,1,0);
         Vector2 maxCamPosition = new Vector2(0,0);
         
-        TiledLoader tLoader;
         TiledMapRenderer tiledMapRenderer;
         TiledMap map;
         TileAtlas atlas;
@@ -94,15 +93,13 @@ public class TiledMapTest extends GdxTest{
                 font.setColor(Color.RED);
                 
                 spriteBatch = new SpriteBatch();
-                 
-                tLoader = new TiledLoader();
                 
                 FileHandle mapHandle = Gdx.files.internal("data/perspective walls.tmx");
                 FileHandle packfile = Gdx.files.internal("data/perspective walls packfile");
                 FileHandle baseDir = Gdx.files.internal("data");
                 
                 startTime = System.currentTimeMillis();
-                map = tLoader.createMap(mapHandle, baseDir);
+                map = TiledLoader.createMap(mapHandle, baseDir);
                 endTime = System.currentTimeMillis();
                 System.out.println("Loaded map in " + (endTime - startTime) + "mS");
                 
