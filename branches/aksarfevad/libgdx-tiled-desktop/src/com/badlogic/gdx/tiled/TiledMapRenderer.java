@@ -103,13 +103,13 @@ public class TiledMapRenderer {
 			blendedTiles = createFromCSV(blendedTilesString);
 		}
 		
-		int maxCacheSize = 0;
-		for(i = 0; i < map.layers.size(); i++){
-			maxCacheSize += map.layers.get(i).height * map.layers.get(i).width;
+		int maxCacheSize = parseIntWithDefault(map.properties.get("tile count"),0);
+		if (maxCacheSize == 0){
+			for(i = 0; i < map.layers.size(); i++){
+				maxCacheSize += map.layers.get(i).height * map.layers.get(i).width;
+			}
+			Gdx.app.log("TiledMapRenderer", "Warning - map doesn't include a tile count");
 		}
-		//TODO: Don't really need a cache that holds all tiles,
-		//really only need room for all VISIBLE tiles.
-		//Should compute this during compiling instead
 		
 		if(shader == null)
 			cache = new SpriteCache(maxCacheSize, false);
@@ -249,6 +249,14 @@ public class TiledMapRenderer {
 		if(worldX < 0) return 0;
 		if(worldX > pixelsPerMapX) return tileWidth - 1;
 		return worldX/tileWidth;
+	}
+	
+	private static int parseIntWithDefault(String string, int defaultValue) {
+		try {
+			return Integer.parseInt(string);
+		} catch (NumberFormatException e) {
+			return defaultValue;
+		}
 	}
 	
 	void dispose() {

@@ -52,6 +52,7 @@ public class TiledMapPacker {
 	
 	private TexturePacker packer;
 	private TiledMap map;
+	private int tileCount = 0;
 	
 	private File outputDir;
 	private FileHandle tmxFileHandle;
@@ -84,7 +85,22 @@ public class TiledMapPacker {
 		Vector2 tileLocation;
 		TileSetLayout packerTileSet;
 		Graphics g;
-		ArrayList<Integer> tilesOnMap = getTilesOnMap(map);
+		
+		ArrayList<Integer> tilesOnMap = new ArrayList<Integer>();
+		
+		//Loop through all tiles on map
+		for(TiledLayer layer: map.layers){
+			for(int row = 0; row < layer.height; row++){
+				for(int col = 0; col < layer.width; col++){
+					if(layer.tile[row][col] != 0){
+						tileCount++;
+						if(!tilesOnMap.contains(layer.tile[row][col])){
+							tilesOnMap.add(layer.tile[row][col]);
+						}
+					}
+				}
+			}
+		}
 		
 		for(int i = 0; i < tilesOnMap.size(); i++){
 			packerTileSet = getTileSetLayout(tilesOnMap.get(i));
@@ -118,19 +134,8 @@ public class TiledMapPacker {
 			doc = docBuilder.parse(tmxFileHandle.read());
 			
 			Node map = doc.getFirstChild();
-			Node properties = getFirstChildNodeByName(map, "properties");
-			Node property = getFirstChildByNameAttrValue(properties, "property", "name", "blended tiles");
-			
-			NamedNodeMap attributes = property.getAttributes();
-			Node value = attributes.getNamedItem("value");
-			if(value == null){
-				value = doc.createAttribute("value");
-				value.setNodeValue(toCSV(blendedTiles));
-				attributes.setNamedItem(value);
-			}
-			else{
-				value.setNodeValue(toCSV(blendedTiles));
-			}
+			setProperty(doc, map, "blended tiles", toCSV(blendedTiles));
+			setProperty(doc, map, "tile count", String.valueOf(tileCount));
 			
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		    Transformer transformer = transformerFactory.newTransformer();
@@ -146,6 +151,22 @@ public class TiledMapPacker {
 			throw new RuntimeException("TransformerConfigurationException: " + e.getMessage());
 		} catch (TransformerException e) {
 			throw new RuntimeException("TransformerException: " + e.getMessage());
+		}
+	}
+	
+	private static void setProperty(Document doc, Node parent, String name, String value){
+		Node properties = getFirstChildNodeByName(parent, "properties");
+		Node property = getFirstChildByNameAttrValue(properties, "property", "name", name);
+		
+		NamedNodeMap attributes = property.getAttributes();
+		Node valueNode = attributes.getNamedItem("value");
+		if(valueNode == null){
+			valueNode = doc.createAttribute("value");
+			valueNode.setNodeValue(value);
+			attributes.setNamedItem(valueNode);
+		}
+		else{
+			valueNode.setNodeValue(value);
 		}
 	}
 	
@@ -175,9 +196,9 @@ public class TiledMapPacker {
 		else
 			return parent.appendChild(parent.getOwnerDocument().createElement(child));
 	}
-	
+
 	/**
-	 * Get the first child node that has 
+	 * If the child node or attribute doesn't exist, it is created.
 	 */
 	//Node property = getFirstChildByAttrValue(properties, "property", "name", "blended tiles")
 	private static Node getFirstChildByNameAttrValue(Node node, String childName, String attr, String value){
@@ -231,22 +252,6 @@ public class TiledMapPacker {
 		}
 	
 		return null;
-	}
-	
-	private static ArrayList<Integer> getTilesOnMap(TiledMap map){
-		ArrayList<Integer> tileList = new ArrayList<Integer>();
-		
-		for(TiledLayer layer: map.layers){
-			for(int row = 0; row < layer.height; row++){
-				for(int col = 0; col < layer.width; col++){
-					if(layer.tile[row][col] != 0 && !tileList.contains(layer.tile[row][col])){
-						tileList.add(layer.tile[row][col]);
-					}
-				}
-			}
-		}
-		
-		return tileList;
 	}
 	
 	public static void main( String[] args ){

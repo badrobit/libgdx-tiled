@@ -54,7 +54,6 @@ public class TiledMap {
 		return null;
 	}
 	
-	//TODO: use an IntMap<HashMap<String,String> to store the properties
 	private class TileProperty{
 		int id;
 		HashMap<String,String> propertyMap = new HashMap<String,String>();
