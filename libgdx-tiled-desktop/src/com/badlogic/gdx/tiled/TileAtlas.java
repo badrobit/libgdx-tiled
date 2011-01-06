@@ -3,8 +3,8 @@ package com.badlogic.gdx.tiled;
 import java.util.List;
 
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.TextureAtlas;
-import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.utils.IntMap;
 
 public class TileAtlas {

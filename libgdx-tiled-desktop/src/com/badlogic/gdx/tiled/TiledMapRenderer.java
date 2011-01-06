@@ -18,8 +18,8 @@ import java.util.StringTokenizer;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.GL11;
-import com.badlogic.gdx.graphics.SpriteCache;
-import com.badlogic.gdx.graphics.TextureAtlas.AtlasRegion;
+import com.badlogic.gdx.graphics.g2d.SpriteCache;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -88,7 +88,7 @@ public class TiledMapRenderer {
 		normalCacheId = new int[map.layers.size()][blocksPerMapY][blocksPerMapX];
 		blendedCacheId = new int[map.layers.size()][blocksPerMapY][blocksPerMapX];
 		 
-		//Calculate overdrawing values
+		//Calculate overdrawing values for when the tiles are larger than the map tile size
 		int overdrawXtemp, overdrawYtemp;
 		for(i=0; i < map.tileSets.size(); i++){
 			overdrawXtemp = map.tileSets.get(i).tileWidth - map.tileWidth;
@@ -128,8 +128,8 @@ public class TiledMapRenderer {
 		}
 	}
 	
-	private IntArray createFromCSV(String values) {
-		IntArray list = new IntArray();
+	private static IntArray createFromCSV(String values) {
+		IntArray list = new IntArray(false, (values.length()+1)/2);
 		StringTokenizer st = new StringTokenizer(values,",");
 		while (st.hasMoreTokens())
 		{
@@ -169,20 +169,26 @@ public class TiledMapRenderer {
 	}
 	
 	//This function should not be used most of the time. Use render(int x, int y, int width, int height) instead.
+	/**Renders the entire map.
+	 * Use this function only on very small maps or for debugging purposes. */
 	public void render() {
 		render(0,0,pixelsPerMapX,pixelsPerMapY);	
 	}
 	
+	/**Renders all layers between the given Tiled world coordinates. */
 	public void render(int x, int y, int width, int height) {
 		render(x,y,width,height,allLayers);
 	}
 	
 	private int initialRow, initialCol, currentRow, currentCol, lastRow, lastCol, currentLayer;
 	
+	/**Renders specific layers between the given Tiled world coordinates.
+	 * @param layers The list of layers to draw, 0 being the lowest layer.
+	 * You will get an IndexOutOfBoundsException if a layer number is too high. */
 	public void render(int x, int y, int width, int height, int[] layers){
 		if(x > pixelsPerMapX || y > pixelsPerMapY) return;
 		initialRow = (y - overdrawY)/(tilesPerBlockY*tileHeight);
-		initialRow = (initialRow > 0) ? initialRow: 0;	
+		initialRow = (initialRow > 0) ? initialRow: 0;
 		initialCol = (x - overdrawX)/(tilesPerBlockX*tileWidth);
 		initialCol = (initialCol > 0) ? initialCol: 0;
 		lastRow = (y + height + overdrawY)/(tilesPerBlockY*tileHeight);
@@ -207,20 +213,28 @@ public class TiledMapRenderer {
 		Gdx.gl.glDisable(GL10.GL_BLEND);
 	}
 	
+	/** Returns the initial drawn block row (for debugging) */
 	public int getInitialRow() {
 		return initialRow;
+		//FIXME: remove debugging functions
 	}
-
+	
+	/** Returns the initial drawn block column (for debugging) */
 	public int getInitialCol() {
 		return initialCol;
+		//FIXME: remove debugging functions
 	}
 
+	/** Returns the last drawn block row (for debugging) */
 	public int getLastRow() {
 		return lastRow;
+		//FIXME: remove debugging functions
 	}
-
+	
+	/** Returns the last drawn block column (for debugging) */
 	public int getLastCol() {
 		return lastCol;
+		//FIXME: remove debugging functions
 	}
 
 	public Matrix4 getProjectionMatrix(){
@@ -239,6 +253,7 @@ public class TiledMapRenderer {
 		return pixelsPerMapX;
 	}
 
+	/** */
 	int getRow(int worldY){
 		if(worldY < 0) return 0;
 		if(worldY > pixelsPerMapY) return tileHeight - 1;
