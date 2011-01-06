@@ -253,7 +253,6 @@ public class TiledMapRenderer {
 		return pixelsPerMapX;
 	}
 
-	/** */
 	int getRow(int worldY){
 		if(worldY < 0) return 0;
 		if(worldY > pixelsPerMapY) return tileHeight - 1;
