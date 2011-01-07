@@ -2,11 +2,11 @@ package com.badlogic.gdx.tests;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.BitmapFont;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.tests.utils.GdxTest;
@@ -52,10 +52,10 @@ public class TiledMapTest extends GdxTest{
                 tiledMapRenderer.getProjectionMatrix().set(cam.getCombinedMatrix());
                 tiledMapRenderer.render((int)cam.getScreenToWorldX(0), tiledMapRenderer.getMapHeightPixels() - (int)cam.getScreenToWorldY(0), Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), layersList);
                 
-                if (System.nanoTime() - startTime >= 1000000000) {
-                        Gdx.app.log("TiledMapTest", "fps: " + Gdx.graphics.getFramesPerSecond());
-                        startTime = System.nanoTime();
-                }
+                //if (System.nanoTime() - startTime >= 1000000000) {
+                //        Gdx.app.log("TiledMapTest", "fps: " + Gdx.graphics.getFramesPerSecond());
+                //        startTime = System.nanoTime();
+                //}
                 
                 spriteBatch.begin();
                     font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 20, 20);
@@ -97,16 +97,16 @@ public class TiledMapTest extends GdxTest{
                 FileHandle mapHandle = Gdx.files.internal("data/perspective walls.tmx");
                 FileHandle packfile = Gdx.files.internal("data/perspective walls packfile");
                 FileHandle baseDir = Gdx.files.internal("data");
-                
+
                 startTime = System.currentTimeMillis();
-                map = TiledLoader.createMap(mapHandle, baseDir);
+                map = TiledLoader.createMap(mapHandle);
                 endTime = System.currentTimeMillis();
                 System.out.println("Loaded map in " + (endTime - startTime) + "mS");
                 
                 atlas = new TileAtlas(map, packfile, baseDir);
                 
-                int blockWidth = SCREEN_WIDTH/2;
-                int blockHeight = SCREEN_HEIGHT/2;
+                int blockWidth = SCREEN_WIDTH/3;
+                int blockHeight = SCREEN_HEIGHT/3;
                 
                 startTime = System.currentTimeMillis();
                 tiledMapRenderer = new TiledMapRenderer(map, atlas, blockWidth, blockHeight);
