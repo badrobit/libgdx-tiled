@@ -15,26 +15,27 @@ package com.badlogic.gdx.tiled;
 
 import java.util.HashMap;
 
-//holds map layer information
+/** Contains Tiled map layer information */
 public class TiledLayer {
 	public final String name;
-	public final int width, height;
-	public HashMap<String,String> properties = new HashMap<String,String>();
 	
-	/**
-	 * Contains the location of all tiles on the layer, addressed as [row][column]. 
-	 */
+	/** Contains the layer properties with a key of the property name. */
+	public HashMap<String,String> properties = new HashMap<String,String>(0);
+	
+	public final int width, height;
+	
+	/** Contains the tile ids, addressed as [row][column]. */
 	public final int[][] tile;
-
+	
+	/** Constructs a new TiledLayer, typically used by {@link TiledLoader}
+	 *  @param name layer name
+	 *  @param width layer width
+	 *  @param height layer height
+	 * */
 	TiledLayer(String name, int width, int height){
 		this.name = name;
 		this.width = width;
 		this.height = height;
 		tile = new int[height][width];
-	}
-	
-	@Override
-	public String toString() {
-		return new String("name \"" + name + "\" size " + width + "x" + height);
 	}
 }

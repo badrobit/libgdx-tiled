@@ -7,9 +7,11 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.utils.IntMap;
 
+/** Contains an atlas of tiles by tile id for use with {@link TiledMapRenderer} */
 public class TileAtlas {
 	private IntMap<AtlasRegion> regionsMap;
 	
+	/** Creates a TileAtlas for use with {@link TiledMapRenderer} */
 	public TileAtlas(TiledMap map, FileHandle packFile, FileHandle imagesDir){
 		TextureAtlas textureAtlas = new TextureAtlas(packFile, imagesDir, false);
 		List<AtlasRegion> atlasRegions = (List<AtlasRegion>) textureAtlas.findRegions(map.tmxFile.nameWithoutExtension());
@@ -19,7 +21,11 @@ public class TileAtlas {
 		}
 	}
 
-	public AtlasRegion getRegion(int index){
-		return regionsMap.get(index);
+	/** Gets an {@link AtlasRegion} for a tile id
+	 * @param id tile id
+	 * @return the {@link AtlasRegion}
+	 * */
+	public AtlasRegion getRegion(int id){
+		return regionsMap.get(id);
 	}
 }
