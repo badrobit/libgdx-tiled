@@ -9,13 +9,22 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.tiled.TileSet;
 
+/** Contains extra information that can only be calculated after
+ * a Tiled Map's tile set images are loaded.
+ * */
 public class TileSetLayout{
 
 	public final BufferedImage image;
-	public final Vector2[] imageTilePositions;
+	private final Vector2[] imageTilePositions;
 	public final int numRows, numCols, numTiles;
 	public final TileSet tileSet;
 	
+	/** Constructs a Tile Set layout. The tile set image contained in the baseDir should
+	 * 	be the original tile set images before being processed by {@link TiledMapPacker}
+	 * 	(the ones actually read by Tiled).
+	 * @param tileSet the tile set to process
+	 * @param baseDir the directory in which the tile set image is stored
+	 * */
 	TileSetLayout(TileSet tileSet, FileHandle baseDir) throws IOException{
 		this.tileSet = tileSet;
 		image = ImageIO.read(baseDir.child(tileSet.imageName).read());
@@ -41,6 +50,7 @@ public class TileSetLayout{
 		}
 	}
 	
+	/** Returns the location of the tile in {@link TileSetLayout#image} */
 	public Vector2 getLocation(int tile){
 		return imageTilePositions[tile - tileSet.firstgid];
 	}

@@ -34,6 +34,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Base64Coder;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
+/** Loads a Tiled Map from a tmx file */
 public class TiledLoader extends DefaultHandler {
 
 	// define states
@@ -41,14 +42,15 @@ public class TiledLoader extends DefaultHandler {
 	private static final int DATA = 1;
 	private static final int DONE = 2;
 	
-	public static TiledMap createMap(FileHandle tmxFile, FileHandle baseDir) {
+	/** Loads a Tiled Map from a tmx file
+	 * @param tmxFile the map's tmx file
+	 * */
+	public static TiledMap createMap(FileHandle tmxFile) {
 		
 		final TiledMap map;
-
-
+		
 		map = new TiledMap();
 		map.tmxFile = tmxFile;
-		map.baseDir = baseDir;
 
 		SAXParser parser = null;
 		try {
@@ -123,13 +125,13 @@ public class TiledLoader extends DefaultHandler {
 						}
 
 						if ("image".equals(qName)) {
-							try {
-								currentTileSet = new TileSet(attr.getValue("source"),
-										tileWidth, tileHeight, firstgid, spacing, margin);
-							} catch (IOException e) {
-								throw new RuntimeException("Error Parsing TMX file: Image "
-										+ attr.getValue("source") + " could not be read");
-							}
+							currentTileSet = new TileSet();
+							currentTileSet.imageName = attr.getValue("source");
+							currentTileSet.tileWidth = tileWidth;
+							currentTileSet.tileHeight = tileHeight;
+							currentTileSet.firstgid = firstgid;
+							currentTileSet.spacing = spacing;
+							currentTileSet.margin = margin;
 							return;
 						}
 

@@ -48,6 +48,8 @@ import com.badlogic.gdx.tiled.TiledLayer;
 import com.badlogic.gdx.tiled.TiledLoader;
 import com.badlogic.gdx.tiled.TiledMap;
 
+/** Packs a Tiled Map, adding some properties to improve the speed of the {@link TiledMapRenderer}.
+ *  Also runs the texture packer on the tiles for use with a {@link TileAtlas} */
 public class TiledMapPacker {
 	
 	private TexturePacker packer;
@@ -59,7 +61,14 @@ public class TiledMapPacker {
 	private FileHandle imageDirHandle;
 	
 	private ArrayList<Integer> blendedTiles = new ArrayList<Integer>();
-
+	
+	/** Packs a Tiled Map, adding some properties to improve the speed of the {@link TiledMapRenderer}.
+	 *  Also runs the texture packer on the tiles for use with a {@link TileAtlas}
+	 *  @param tmxFile the map's tmx file
+	 *  @param imageDir the directory containing tile set images
+	 *  @param outputDir the directory to output a fully processed map to
+	 *  @param settings the settings used in the TexturePacker
+	 *  */
 	public void processMap(File tmxFile, File imageDir, File outputDir, Settings settings) throws IOException{
 		this.outputDir = outputDir;
 		
@@ -73,7 +82,7 @@ public class TiledMapPacker {
 				if (file.getName().startsWith(prefix)) file.delete();
 		}
 		
-		map = TiledLoader.createMap(tmxFileHandle, imageDirHandle);
+		map = TiledLoader.createMap(tmxFileHandle);
 		
 		packMap(map, settings);
 	}
@@ -180,9 +189,7 @@ public class TiledMapPacker {
 		return temp;
 	}
 	
-	/**
-	 * If the child node doesn't exist, it is created.
-	 */
+	/** If the child node doesn't exist, it is created. */
 	private static Node getFirstChildNodeByName(Node parent, String child){
 		NodeList childNodes = parent.getChildNodes();
 		for(int i = 0; i < childNodes.getLength(); i++){
@@ -197,10 +204,8 @@ public class TiledMapPacker {
 			return parent.appendChild(parent.getOwnerDocument().createElement(child));
 	}
 
-	/**
-	 * If the child node or attribute doesn't exist, it is created.
-	 */
-	//Node property = getFirstChildByAttrValue(properties, "property", "name", "blended tiles")
+	/** If the child node or attribute doesn't exist, it is created.
+	 * Usage example: Node property = getFirstChildByAttrValue(properties, "property", "name", "blended tiles"); */
 	private static Node getFirstChildByNameAttrValue(Node node, String childName, String attr, String value){
 		NodeList childNodes = node.getChildNodes();
 		for(int i = 0; i < childNodes.getLength(); i++){
