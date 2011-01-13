@@ -1,5 +1,9 @@
 package game.hex;
 
+/**
+ * @author nEx.Software
+ * 
+ */
 public class HexMap
 {
 	private
@@ -78,7 +82,7 @@ public class HexMap
 							{
 								case INNER:
 								{
-									//TODO: Implement Inner
+									Hexes[y][x] = new Hex(0 + h, Height, side, orientation);
 									break;
 								}
 								case OUTER:
@@ -96,7 +100,7 @@ public class HexMap
 							{
 								case INNER:
 								{
-									//TODO: Implement Inner
+									Hexes[y][x] = new Hex(0 + r, Height, side, orientation);
 									break;
 								}
 								case OUTER:
